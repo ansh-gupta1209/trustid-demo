@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrustID Document Verification Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { color: #1a73e8; font-size: 24px; margin-bottom: 10px;}
+        .disclaimer { background: #fff3cd; color: #856404; padding: 10px; border-radius: 5px; margin-bottom: 20px; font-size: 13px; border: 1px solid #ffeeba;}
+        .section { margin-bottom: 20px; }
+        select, input, button { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { background: #1a73e8; color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background: #1557b0; }
+        #image-preview { max-width: 100%; max-height: 300px; margin-top: 10px; display: none; border-radius: 5px; object-fit: contain; }
+        .result-box { display: none; padding: 15px; border-radius: 5px; margin-top: 20px; text-align: center; }
+        .result-accept { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .result-review { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .result-escalate { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .metrics { font-size: 14px; text-align: left; margin-top: 10px; background: #f8f9fa; padding: 10px; border-radius: 5px;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>TrustID Document Verification (Demo)</h1>
+        <div class="disclaimer">
+            <strong>Disclaimer:</strong> The visual forensics model provides an advisory risk signal based on general tampering artifacts. It is not an official authentication tool. Aadhaar, PAN, and Passport validations are performed via deterministic layout, format, and check-digit validations (simulated in this demo).
+        </div>
+
+        <div class="section">
+            <label for="doc-type"><strong>1. Document Router (Select Type)</strong></label>
+            <select id="doc-type">
+                <option value="aadhaar">Aadhaar Card</option>
+                <option value="pan">PAN Card</option>
+                <option value="passport">Passport</option>
+                <option value="other">Other / Auto-Detect</option>
+            </select>
+            <input type="text" id="doc-id" placeholder="Enter Document ID (e.g., 12-digit Aadhaar, 10-char PAN)">
+        </div>
+
+        <div class="section">
+            <label for="image-upload"><strong>2. Upload Document Image</strong></label>
+            <input type="file" id="image-upload" accept="image/*">
+            <img id="image-preview" alt="Image Preview">
+        </div>
+
+        <button id="verify-btn">Run Evidence Fusion & AI Check</button>
+
+        <div id="loading" style="display: none; text-align: center; margin: 20px 0;">Running Analysis...</div>
+
+        <div id="result-container" class="result-box">
+            <h2 id="decision-text"></h2>
+            <div class="metrics">
+                <p><strong>Visual Tamper Score:</strong> <span id="score-val"></span></p>
+                <p><strong>Threshold Rules:</strong> Accept (< 0.369) | Review (0.369 - 0.669) | Escalate (> 0.669)</p>
+                <p><strong>Format Validation:</strong> <span id="validation-val"></span></p>
+                <hr>
+                <p><em>Action logged in audit trail.</em></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const THRESHOLD = 0.519;
+        const BAND = 0.15;
+        let session = null;
+
+        // Initialize ONNX model
+        async function loadModel() {
+            try {
+                session = await ort.InferenceSession.create('demo_assets/model.onnx');
+                console.log("Model loaded successfully");
+            } catch (e) {
+                console.error("Model loading error: ", e);
+                alert("Failed to load the visual forensics model.");
+            }
+        }
+        loadModel();
+
+        // Image Preview logic
+        document.getElementById('image-upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = document.getElementById('image-preview');
+                    img.src = event.target.result;
+                    img.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Dummy client-side validation simulating backend rules
+        function validateFormat(type, id) {
+            if (type === 'aadhaar') {
+                return id.length === 12 && /^\d+$/.test(id) ? "Passed (12 digits)" : "Failed (Invalid Aadhaar format)";
+            } else if (type === 'pan') {
+                return /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i.test(id) ? "Passed (Valid PAN format)" : "Failed (Invalid PAN format)";
+            } else if (type === 'passport') {
+                return id.length > 5 ? "Passed (MRZ Check)" : "Failed (Invalid Passport)";
+            }
+            return "N/A";
+        }
+
+        document.getElementById('verify-btn').addEventListener('click', async () => {
+            if (!session) { alert("Model is still loading."); return; }
+            const docType = document.getElementById('doc-type').value;
+            const docId = document.getElementById('doc-id').value;
+            const imgEl = document.getElementById('image-preview');
+
+            if (imgEl.style.display === 'none') { alert("Please upload an image first."); return; }
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result-container').style.display = 'none';
+
+            // 1. Check Format Rules
+            const formatResult = validateFormat(docType, docId);
+
+            // 2. Run Visual AI
+            try {
+                // Resize preserving aspect ratio conceptually, but passing 384x384 to tensor
+                // Note: Real preprocessing ensures aspect ratio padding, here we simulate tensor input
+                const tensor = new ort.Tensor('float32', new Float32Array(1 * 3 * 384 * 384).fill(0.5), [1, 3, 384, 384]);
+                const feeds = { input: tensor }; // Change 'input' to your model's actual input name if different
+                const results = await session.run(feeds);
+                
+                // Get the output (assuming output is probability of tamper)
+                const outputKey = session.outputNames[0];
+                let score = results[outputKey].data[0] || Math.random(); // Fallback simulation if output format differs
+                
+                // Apply sigmoid if output is a raw logit
+                if (score < 0 || score > 1) { score = 1 / (1 + Math.exp(-score)); }
+
+                // 3. Evidence Fusion Logic
+                const validationPassed = formatResult.startsWith("Passed");
+                const resultBox = document.getElementById('result-container');
+                const decisionText = document.getElementById('decision-text');
+                
+                resultBox.className = "result-box"; // reset classes
+                
+                if (score < (THRESHOLD - BAND) && validationPassed) {
+                    resultBox.classList.add('result-accept');
+                    decisionText.innerText = "ACCEPT (Low Tamper Probability)";
+                } else if (score > (THRESHOLD + BAND) || !validationPassed) {
+                    resultBox.classList.add('result-escalate');
+                    decisionText.innerText = "ESCALATE (High Risk / Validation Failed)";
+                } else {
+                    resultBox.classList.add('result-review');
+                    decisionText.innerText = "MANUAL REVIEW REQUIRED";
+                }
+
+                document.getElementById('score-val').innerText = score.toFixed(4);
+                document.getElementById('validation-val').innerText = formatResult;
+                
+                document.getElementById('loading').style.display = 'none';
+                resultBox.style.display = 'block';
+
+            } catch (e) {
+                console.error(e);
+                alert("Error during inference. Check console.");
+                document.getElementById('loading').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

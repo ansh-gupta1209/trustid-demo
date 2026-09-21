@@ -1,0 +1,14 @@
+venv/
+__pycache__/
+out_final/raw/
+out2/raw/
+out_run1/raw/
+*.zip                
+.gitignore.backup
+demo/
+models/
+out2/
+out2_band04/
+out_final/
+out_run1/
+train_sidtd.py
