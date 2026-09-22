@@ -44,14 +44,14 @@
     <style>
         body { background-color: #f8fafc; overflow-x: hidden; }
         
-        /* Vibrant Gradients */
+        /* Vibrant Gradients - Blue Theme */
         .text-gradient { 
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%); 
+            background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #0ea5e9 100%); 
             -webkit-background-clip: text; 
             -webkit-text-fill-color: transparent; 
         }
         .bg-gradient-vibrant {
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #0284c7 100%);
             background-size: 200% 200%;
             animation: gradientMove 5s ease infinite;
         }
@@ -59,14 +59,14 @@
         
         /* Dropzone Styling */
         .drop-zone { border: 2px dashed #cbd5e1; transition: all 0.3s ease; }
-        .drop-zone:hover { border-color: #8b5cf6; background-color: #f5f3ff; box-shadow: 0 0 20px rgba(139, 92, 246, 0.15); transform: translateY(-2px); }
-        .drag-active { border-color: #ec4899; background-color: #fdf2f8; transform: scale(1.02); }
+        .drop-zone:hover { border-color: #3b82f6; background-color: #eff6ff; box-shadow: 0 0 20px rgba(59, 130, 246, 0.15); transform: translateY(-2px); }
+        .drag-active { border-color: #0ea5e9; background-color: #f0f9ff; transform: scale(1.02); }
         
         /* Card Aesthetics */
         .aesthetic-card {
             background: #ffffff;
             border: 1px solid rgba(255,255,255,0.8);
-            box-shadow: 0 20px 40px -15px rgba(0,0,0,0.05), 0 0 40px -10px rgba(139, 92, 246, 0.05);
+            box-shadow: 0 20px 40px -15px rgba(0,0,0,0.05), 0 0 40px -10px rgba(59, 130, 246, 0.05);
             border-radius: 24px;
         }
         
@@ -78,18 +78,18 @@
         }
         .modern-input:focus {
             background: #ffffff;
-            border-color: #8b5cf6;
-            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
         }
     </style>
 </head>
-<body class="min-h-screen text-slate-800 antialiased relative selection:bg-purple-200 selection:text-purple-900">
+<body class="min-h-screen text-slate-800 antialiased relative selection:bg-blue-200 selection:text-blue-900">
 
-    <!-- Vibrant Background Blobs -->
+    <!-- Vibrant Background Blobs (Blue Theme) -->
     <div class="fixed inset-0 w-full h-full pointer-events-none z-0 overflow-hidden">
-        <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-[100px] opacity-30 animate-blob"></div>
-        <div class="absolute top-[20%] right-[-10%] w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-[100px] opacity-30 animate-blob" style="animation-delay: 2s"></div>
-        <div class="absolute bottom-[-20%] left-[20%] w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-[100px] opacity-30 animate-blob" style="animation-delay: 4s"></div>
+        <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-[100px] opacity-30 animate-blob"></div>
+        <div class="absolute top-[20%] right-[-10%] w-96 h-96 bg-sky-300 rounded-full mix-blend-multiply filter blur-[100px] opacity-30 animate-blob" style="animation-delay: 2s"></div>
+        <div class="absolute bottom-[-20%] left-[20%] w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-[100px] opacity-30 animate-blob" style="animation-delay: 4s"></div>
     </div>
 
     <div class="relative z-10 py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -97,7 +97,7 @@
         <!-- Header -->
         <div class="text-center mb-12 animate-float">
             <div class="inline-flex items-center justify-center p-3 bg-white rounded-2xl shadow-lg mb-4 text-3xl">
-                <i class="fa-solid fa-shield-halved text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"></i>
+                <i class="fa-solid fa-shield-halved text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-sky-500"></i>
             </div>
             <h1 class="text-5xl font-extrabold tracking-tight mb-3"><span class="text-gradient">TrustID</span></h1>
             <p class="text-slate-500 text-lg font-medium max-w-xl mx-auto">Upload an ID document to run our state-of-the-art visual tampering detection and deterministic layout checks.</p>
@@ -116,10 +116,10 @@
                 <div class="space-y-6">
                     <!-- Document Type -->
                     <div class="group">
-                        <label class="block text-sm font-semibold text-slate-700 mb-2 transition group-hover:text-purple-600">Document Type</label>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2 transition group-hover:text-blue-600">Document Type</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <i class="fa-regular fa-id-card text-slate-400 group-hover:text-purple-500 transition"></i>
+                                <i class="fa-regular fa-id-card text-slate-400 group-hover:text-blue-500 transition"></i>
                             </div>
                             <select id="doc-type" class="modern-input block w-full pl-11 pr-4 py-3.5 rounded-xl text-slate-700 outline-none appearance-none font-medium cursor-pointer">
                                 <option value="aadhaar">Aadhaar Card</option>
@@ -159,7 +159,7 @@
                     </div>
 
                     <!-- Action Button -->
-                    <button id="verify-btn" class="w-full mt-4 flex justify-center items-center py-4 px-6 rounded-xl shadow-[0_10px_20px_-10px_rgba(139,92,246,0.6)] text-white font-bold text-lg bg-gradient-vibrant hover:scale-[1.02] active:scale-95 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                    <button id="verify-btn" class="w-full mt-4 flex justify-center items-center py-4 px-6 rounded-xl shadow-[0_10px_20px_-10px_rgba(37,99,235,0.6)] text-white font-bold text-lg bg-gradient-vibrant hover:scale-[1.02] active:scale-95 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed">
                         <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Analyze Document
                     </button>
                 </div>
@@ -173,32 +173,32 @@
                     
                     <div id="preview-placeholder" class="text-center w-full h-full flex flex-col items-center justify-center">
                         
-                        <!-- Classy Vibrant Graphic -->
+                        <!-- Classy Vibrant Graphic (Blue Theme) -->
                         <div class="relative w-40 h-40 mb-8 mt-4">
-                            <div class="absolute inset-0 bg-gradient-to-tr from-purple-500 to-blue-500 rounded-full blur-2xl opacity-30 animate-pulse-slow"></div>
+                            <div class="absolute inset-0 bg-gradient-to-tr from-sky-400 to-blue-600 rounded-full blur-2xl opacity-30 animate-pulse-slow"></div>
                             <div class="relative w-full h-full bg-white rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.05)] flex items-center justify-center border border-white/80 z-10 overflow-hidden">
-                                <i class="fa-solid fa-fingerprint text-6xl text-transparent bg-clip-text bg-gradient-to-br from-blue-500 to-purple-500"></i>
-                                <!-- Scanning laser animation -->
-                                <div class="absolute top-0 left-0 w-full h-[2px] bg-pink-500 shadow-[0_0_15px_rgba(236,72,153,1)] animate-scan"></div>
+                                <i class="fa-solid fa-fingerprint text-6xl text-transparent bg-clip-text bg-gradient-to-br from-blue-700 to-sky-400"></i>
+                                <!-- Scanning laser animation (Cyan) -->
+                                <div class="absolute top-0 left-0 w-full h-[2px] bg-cyan-400 shadow-[0_0_15px_rgba(34,211,238,1)] animate-scan"></div>
                             </div>
                         </div>
 
-                        <!-- Feature Grid to fill space -->
+                        <!-- Feature Grid to fill space (Blue Theme) -->
                         <div class="grid grid-cols-2 gap-4 w-full px-4 mb-4">
                             <div class="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-slate-100 shadow-sm flex items-center space-x-3 hover:-translate-y-1 transition-transform duration-300">
-                                <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500"><i class="fa-solid fa-brain"></i></div>
+                                <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600"><i class="fa-solid fa-brain"></i></div>
                                 <div class="text-left"><p class="text-sm font-bold text-slate-800">Visual Forensics</p><p class="text-xs text-slate-500">AI Deep Learning</p></div>
                             </div>
                             <div class="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-slate-100 shadow-sm flex items-center space-x-3 hover:-translate-y-1 transition-transform duration-300">
-                                <div class="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-500"><i class="fa-solid fa-crop-simple"></i></div>
+                                <div class="w-10 h-10 rounded-lg bg-sky-50 flex items-center justify-center text-sky-600"><i class="fa-solid fa-crop-simple"></i></div>
                                 <div class="text-left"><p class="text-sm font-bold text-slate-800">Format Rules</p><p class="text-xs text-slate-500">Deterministic Checks</p></div>
                             </div>
                             <div class="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-slate-100 shadow-sm flex items-center space-x-3 hover:-translate-y-1 transition-transform duration-300">
-                                <div class="w-10 h-10 rounded-lg bg-pink-50 flex items-center justify-center text-pink-500"><i class="fa-solid fa-text-width"></i></div>
+                                <div class="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600"><i class="fa-solid fa-text-width"></i></div>
                                 <div class="text-left"><p class="text-sm font-bold text-slate-800">Auto OCR</p><p class="text-xs text-slate-500">Text Extraction</p></div>
                             </div>
                             <div class="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-slate-100 shadow-sm flex items-center space-x-3 hover:-translate-y-1 transition-transform duration-300">
-                                <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500"><i class="fa-solid fa-bolt"></i></div>
+                                <div class="w-10 h-10 rounded-lg bg-cyan-50 flex items-center justify-center text-cyan-600"><i class="fa-solid fa-bolt"></i></div>
                                 <div class="text-left"><p class="text-sm font-bold text-slate-800">Real-time</p><p class="text-xs text-slate-500">Sub-second inference</p></div>
                             </div>
                         </div>
@@ -211,10 +211,10 @@
                     <div id="loading" class="hidden absolute inset-0 bg-white/90 backdrop-blur-md z-20 flex flex-col items-center justify-center">
                         <div class="relative w-24 h-24 mb-6">
                             <div class="absolute inset-0 border-4 border-slate-100 rounded-full"></div>
-                            <div class="absolute inset-0 border-4 border-purple-500 rounded-full border-t-transparent animate-spin"></div>
-                            <div class="absolute inset-0 flex items-center justify-center text-purple-500"><i class="fa-solid fa-brain text-2xl animate-pulse-slow"></i></div>
+                            <div class="absolute inset-0 border-4 border-blue-500 rounded-full border-t-transparent animate-spin"></div>
+                            <div class="absolute inset-0 flex items-center justify-center text-blue-500"><i class="fa-solid fa-brain text-2xl animate-pulse-slow"></i></div>
                         </div>
-                        <p class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 font-bold text-xl mb-1">Processing Image...</p>
+                        <p class="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-sky-500 font-bold text-xl mb-1">Processing Image...</p>
                         <p class="text-sm text-slate-500 font-medium">Running visual forensics & OCR extraction</p>
                     </div>
                 </div>
@@ -230,8 +230,8 @@
                     <div class="p-8">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                             <!-- Tamper Score -->
-                            <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100 shadow-sm relative overflow-hidden group hover:border-purple-200 transition">
-                                <div class="absolute top-0 right-0 w-24 h-24 bg-purple-100 rounded-full mix-blend-multiply filter blur-xl opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
+                            <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100 shadow-sm relative overflow-hidden group hover:border-blue-200 transition">
+                                <div class="absolute top-0 right-0 w-24 h-24 bg-blue-100 rounded-full mix-blend-multiply filter blur-xl opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
                                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 relative z-10">AI Tamper Score</h3>
                                 <div class="flex items-baseline space-x-2 relative z-10">
                                     <span id="score-val" class="text-4xl font-extrabold text-slate-800">--</span>
@@ -240,8 +240,8 @@
                             </div>
                             
                             <!-- Validation Status -->
-                            <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100 shadow-sm relative overflow-hidden group hover:border-blue-200 transition">
-                                <div class="absolute bottom-0 right-0 w-24 h-24 bg-blue-100 rounded-full mix-blend-multiply filter blur-xl opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
+                            <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100 shadow-sm relative overflow-hidden group hover:border-sky-200 transition">
+                                <div class="absolute bottom-0 right-0 w-24 h-24 bg-sky-100 rounded-full mix-blend-multiply filter blur-xl opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
                                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 relative z-10">Rule Validation</h3>
                                 <div id="validation-val" class="flex items-center text-2xl font-extrabold relative z-10 mt-1">
                                     --
@@ -252,7 +252,7 @@
                         <!-- Extracted ID -->
                         <div class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
                             <div class="flex items-center mb-2 sm:mb-0">
-                                <div class="w-8 h-8 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center mr-3"><i class="fa-solid fa-fingerprint"></i></div>
+                                <div class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mr-3"><i class="fa-solid fa-fingerprint"></i></div>
                                 <span class="text-sm font-bold text-slate-700">Extracted Document ID</span>
                             </div>
                             <span id="extracted-id-val" class="font-mono bg-slate-800 px-4 py-2 rounded-lg text-sm font-bold text-emerald-400 tracking-widest text-center">--</span>
@@ -289,13 +289,13 @@
         ['dragenter', 'dragover'].forEach(eventName => {
             dropZone.addEventListener(eventName, () => {
                 dropZone.classList.add('drag-active');
-                dropZone.querySelector('.drop-zone-icon').classList.add('text-pink-500', 'bg-pink-50');
+                dropZone.querySelector('.drop-zone-icon').classList.add('text-sky-500', 'bg-sky-50');
             }, false);
         });
         ['dragleave', 'drop'].forEach(eventName => {
             dropZone.addEventListener(eventName, () => {
                 dropZone.classList.remove('drag-active');
-                dropZone.querySelector('.drop-zone-icon').classList.remove('text-pink-500', 'bg-pink-50');
+                dropZone.querySelector('.drop-zone-icon').classList.remove('text-sky-500', 'bg-sky-50');
             }, false);
         });
 
@@ -356,7 +356,7 @@
                     decisionIcon.className = "fa-solid fa-shield-check";
                     decisionText.innerText = "AUTHENTICATED";
                 } else if (data.decision === "ESCALATE") {
-                    banner.classList.add('bg-gradient-to-r', 'from-rose-600', 'to-pink-500');
+                    banner.classList.add('bg-gradient-to-r', 'from-rose-600', 'to-red-500');
                     decisionIcon.className = "fa-solid fa-triangle-exclamation";
                     decisionText.innerText = "HIGH RISK DETECTED";
                 } else {
