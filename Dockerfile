@@ -1,30 +1,28 @@
-# Use official Python runtime as a parent image
 FROM python:3.10-slim
 
-# Install system dependencies (Tesseract OCR and required libraries for OpenCV/Pillow)
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     tesseract-ocr \
-    libgl1-mesa-glx \
+    libgl1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Set the working directory in the container
+# Set working directory
 WORKDIR /app
 
-# Copy the requirements file into the container
-COPY backend/requirements.txt .
+# Copy requirements
+COPY backend/requirements.txt ./requirements.txt
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the backend code
+# Copy backend code
 COPY backend/ ./backend/
 
-# Copy the public folder (specifically for demo_assets/model.onnx)
-# Since the backend code expects the model at ../public/demo_assets/model.onnx
+# Copy public folder and model
 COPY public/ ./public/
 
-# Expose port 8000
-EXPOSE 8000
+# Render uses the PORT environment variable
+EXPOSE 10000
 
-# Set the command to run the FastAPI app
-CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Start FastAPI
+CMD ["sh", "-c", "uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-10000}"]
