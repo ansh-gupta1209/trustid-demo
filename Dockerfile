@@ -1,10 +1,10 @@
-# Use official Python runtime as a parent image
-FROM python:3.10-slim
+# Use Debian Bullseye (has execstack package) as base
+FROM python:3.10-slim-bullseye
 
 # Install system dependencies
-# - tesseract-ocr   → OCR engine
-# - libgl1          → graphics libraries for OpenCV/Pillow
-# - execstack       → utility to clear the executable‑stack flag on the onnxruntime .so file
+# - tesseract-ocr : OCR engine
+# - libgl1      : graphics libs for Pillow/OpenCV
+# - execstack   : utility to clear the executable‑stack flag on onnxruntime .so
 RUN apt-get update && apt-get install -y \
     tesseract-ocr \
     libgl1 \
@@ -14,12 +14,11 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app
 
-# Copy requirements and install Python dependencies
+# Copy requirements and install Python deps
 COPY backend/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Clear the executable‑stack flag on any onnxruntime shared objects
-# This fixes the RuntimeError: cannot enable executable stack as shared object requires
 RUN python - <<'PY'
 import os, glob, onnxruntime
 capi_dir = os.path.join(os.path.dirname(onnxruntime.__file__), 'capi')
@@ -31,7 +30,7 @@ PY
 COPY backend/ ./backend/
 COPY public/ ./public/
 
-# Render provides the PORT environment variable; expose a placeholder port
+# Expose placeholder port (Render will set $PORT at runtime)
 EXPOSE 10000
 
 # Start FastAPI using Render's PORT variable
