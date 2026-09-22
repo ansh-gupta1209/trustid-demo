@@ -9,20 +9,16 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app
 
-# Copy requirements
+# Copy requirements and install Python dependencies
 COPY backend/requirements.txt ./requirements.txt
-
-# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy backend code
+# Copy backend code and public assets (including model)
 COPY backend/ ./backend/
-
-# Copy public folder and model
 COPY public/ ./public/
 
-# Render uses the PORT environment variable
+# Render provides the PORT environment variable; expose it for documentation
 EXPOSE 10000
 
-# Start FastAPI
+# Start FastAPI using Render's PORT variable
 CMD ["sh", "-c", "uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-10000}"]
