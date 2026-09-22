@@ -3,96 +3,230 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TrustID Document Verification Demo</title>
-    <!-- Removed onnxruntime-web script -->
+    <title>TrustID | Intelligent Document Verification</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 900: '#1e3a8a' }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h1 { color: #1a73e8; font-size: 24px; margin-bottom: 10px;}
-        .disclaimer { background: #fff3cd; color: #856404; padding: 10px; border-radius: 5px; margin-bottom: 20px; font-size: 13px; border: 1px solid #ffeeba;}
-        .section { margin-bottom: 20px; }
-        select, input, button { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        button { background: #1a73e8; color: white; border: none; cursor: pointer; font-weight: bold; }
-        button:hover { background: #1557b0; }
-        button:disabled { background: #a0c4f5; cursor: not-allowed; }
-        #image-preview { max-width: 100%; max-height: 300px; margin-top: 10px; display: none; border-radius: 5px; object-fit: contain; }
-        .result-box { display: none; padding: 15px; border-radius: 5px; margin-top: 20px; text-align: center; }
-        .result-accept { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .result-review { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-        .result-escalate { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .metrics { font-size: 14px; text-align: left; margin-top: 10px; background: #f8f9fa; padding: 10px; border-radius: 5px;}
-        .logs { margin-top: 10px; font-size: 13px; color: #555; background: #e9ecef; padding: 10px; border-radius: 5px; text-align: left; white-space: pre-wrap; }
+        body { background-color: #f3f4f6; }
+        .drag-active { border-color: #3b82f6; background-color: #eff6ff; }
+        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(229, 231, 235, 0.5); }
+        .gradient-text { background: linear-gradient(90deg, #2563eb, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        /* Smooth fade for elements */
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>TrustID Document Verification (Demo)</h1>
-        <div class="disclaimer">
-            <strong>Disclaimer:</strong> This prototype connects to the Python backend to perform live ONNX inference and deterministic validation (Verhoeff for Aadhaar, Regex for PAN). If you leave the Document ID blank, the backend will attempt OCR to extract it.
-        </div>
+<body class="min-h-screen text-gray-800 antialiased py-8 px-4 sm:px-6 lg:px-8">
 
-        <div class="section">
-            <label for="doc-type"><strong>1. Document Router (Select Type)</strong></label>
-            <select id="doc-type">
-                <option value="aadhaar">Aadhaar Card</option>
-                <option value="pan">PAN Card</option>
-                <option value="passport">Passport</option>
-            </select>
-            <input type="text" id="doc-id" placeholder="Enter Document ID (Optional - If left blank, OCR will be attempted)">
-        </div>
+    <!-- Header -->
+    <div class="max-w-6xl mx-auto mb-8 text-center">
+        <h1 class="text-4xl font-bold tracking-tight mb-2"><i class="fa-solid fa-shield-halved text-brand-600 mr-2"></i><span class="gradient-text">TrustID</span></h1>
+        <p class="text-gray-500 text-lg">Intelligent Document Verification & Fraud Detection</p>
+    </div>
 
-        <div class="section">
-            <label for="image-upload"><strong>2. Upload Document Image</strong></label>
-            <input type="file" id="image-upload" accept="image/*">
-            <img id="image-preview" alt="Image Preview">
-        </div>
+    <!-- Main Container -->
+    <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <!-- Left Column: Inputs -->
+        <div class="glass-panel rounded-2xl shadow-xl p-8 h-fit">
+            <h2 class="text-xl font-semibold mb-6 flex items-center"><i class="fa-solid fa-sliders text-gray-400 mr-3"></i> Analysis Parameters</h2>
+            
+            <div class="space-y-6">
+                <!-- Document Type -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">1. Document Type</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-regular fa-id-card text-gray-400"></i>
+                        </div>
+                        <select id="doc-type" class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-brand-500 focus:border-brand-500 transition shadow-sm appearance-none bg-white">
+                            <option value="aadhaar">Aadhaar Card</option>
+                            <option value="pan">PAN Card</option>
+                            <option value="passport">Passport</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-chevron-down text-gray-400 text-sm"></i>
+                        </div>
+                    </div>
+                </div>
 
-        <button id="verify-btn">Run Evidence Fusion & AI Check</button>
+                <!-- Document ID -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">2. Document ID (Optional)</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-hashtag text-gray-400"></i>
+                        </div>
+                        <input type="text" id="doc-id" placeholder="Leave blank for automatic OCR extraction" class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-brand-500 focus:border-brand-500 transition shadow-sm">
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500">If omitted, the AI engine will attempt to extract it automatically.</p>
+                </div>
 
-        <div id="loading" style="display: none; text-align: center; margin: 20px 0; color: #1a73e8; font-weight: bold;">
-            Uploading and Running Analysis on Backend...
-        </div>
+                <!-- Upload Area -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">3. Document Image</label>
+                    <div id="drop-zone" class="mt-1 flex justify-center px-6 pt-10 pb-10 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer hover:bg-gray-50 transition relative overflow-hidden group">
+                        <div class="space-y-2 text-center z-10" id="upload-content">
+                            <i class="fa-solid fa-cloud-arrow-up text-4xl text-gray-400 group-hover:text-brand-500 transition"></i>
+                            <div class="text-sm text-gray-600">
+                                <span class="font-semibold text-brand-600">Click to upload</span> or drag and drop
+                            </div>
+                            <p class="text-xs text-gray-500">PNG, JPG, JPEG up to 10MB</p>
+                        </div>
+                        <input id="image-upload" type="file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" accept="image/*">
+                    </div>
+                </div>
 
-        <div id="result-container" class="result-box">
-            <h2 id="decision-text"></h2>
-            <div class="metrics">
-                <p><strong>Extracted Document ID:</strong> <span id="extracted-id-val"></span></p>
-                <p><strong>Visual Tamper Score:</strong> <span id="score-val"></span></p>
-                <p><strong>Validation Status:</strong> <span id="validation-val"></span></p>
-                <p><strong>Threshold Rules:</strong> Accept (< 0.369) | Review (0.369 - 0.669) | Escalate (> 0.669)</p>
-                <hr>
-                <strong>Backend Execution Logs:</strong>
-                <div class="logs" id="reasons-log"></div>
+                <!-- Action Button -->
+                <button id="verify-btn" class="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-xl shadow-md text-lg font-medium text-white bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-700 hover:to-brand-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="fa-solid fa-magnifying-glass mr-2"></i> Run Evidence Fusion Check
+                </button>
             </div>
+        </div>
+
+        <!-- Right Column: Results & Preview -->
+        <div class="flex flex-col gap-6">
+            
+            <!-- Image Preview Card -->
+            <div class="glass-panel rounded-2xl shadow-xl p-6 flex flex-col items-center justify-center min-h-[250px] relative overflow-hidden">
+                <div id="preview-placeholder" class="text-gray-400 flex flex-col items-center">
+                    <i class="fa-regular fa-image text-5xl mb-3 opacity-50"></i>
+                    <p class="text-sm">Image Preview will appear here</p>
+                </div>
+                <img id="image-preview" alt="Image Preview" class="hidden max-w-full max-h-[300px] object-contain rounded-lg shadow-sm z-10">
+                
+                <!-- Loading Overlay -->
+                <div id="loading" class="hidden absolute inset-0 bg-white/80 backdrop-blur-sm z-20 flex flex-col items-center justify-center">
+                    <i class="fa-solid fa-circle-notch fa-spin text-4xl text-brand-600 mb-4"></i>
+                    <p class="text-brand-700 font-semibold animate-pulse">Running Neural Analysis...</p>
+                    <p class="text-xs text-gray-500 mt-2">Connecting to Backend API</p>
+                </div>
+            </div>
+
+            <!-- Results Card (Hidden initially) -->
+            <div id="result-container" class="hidden glass-panel rounded-2xl shadow-xl overflow-hidden fade-in">
+                <!-- Header Banner -->
+                <div id="decision-banner" class="py-4 px-6 text-center text-white font-bold text-xl tracking-wide">
+                    <i id="decision-icon" class="mr-2"></i><span id="decision-text"></span>
+                </div>
+                
+                <div class="p-6">
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <!-- Tamper Score -->
+                        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 flex flex-col items-center text-center">
+                            <span class="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-1">Visual Tamper Score</span>
+                            <span id="score-val" class="text-3xl font-bold text-gray-800">--</span>
+                            <span class="text-[10px] text-gray-400 mt-1">Accept < 0.369 | Escalate > 0.669</span>
+                        </div>
+                        
+                        <!-- Validation Status -->
+                        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 flex flex-col items-center text-center justify-center">
+                            <span class="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-1">Format Rules</span>
+                            <div id="validation-val" class="flex items-center text-lg font-bold">
+                                --
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Extracted ID -->
+                    <div class="mb-6 flex items-center justify-between border-b border-gray-100 pb-4">
+                        <span class="text-sm font-medium text-gray-600"><i class="fa-solid fa-microchip text-brand-500 mr-2"></i>Extracted ID:</span>
+                        <span id="extracted-id-val" class="font-mono bg-gray-100 px-3 py-1 rounded text-sm font-bold text-gray-800 tracking-wider">--</span>
+                    </div>
+
+                    <!-- Logs Accordion -->
+                    <div class="mt-4">
+                        <h4 class="text-sm font-semibold text-gray-700 mb-2 flex items-center"><i class="fa-solid fa-clipboard-list text-gray-400 mr-2"></i>Backend Audit Trail</h4>
+                        <div class="bg-gray-900 text-green-400 font-mono text-xs rounded-lg p-4 h-32 overflow-y-auto shadow-inner leading-relaxed" id="reasons-log">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
+    <!-- Footer Disclaimer -->
+    <div class="max-w-6xl mx-auto mt-12 text-center px-4">
+        <p class="text-xs text-gray-400 bg-white/50 inline-block px-4 py-2 rounded-full border border-gray-200">
+            <i class="fa-solid fa-circle-info mr-1 text-brand-500"></i> 
+            This prototype connects to the Python backend to perform live ONNX inference and deterministic validation (Verhoeff/Regex/MRZ).
+        </p>
+    </div>
+
     <script>
-        // Image Preview logic
+        // DOM Elements
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('image-upload');
+        const imgPreview = document.getElementById('image-preview');
+        const previewPlaceholder = document.getElementById('preview-placeholder');
+        const verifyBtn = document.getElementById('verify-btn');
         let selectedFile = null;
-        document.getElementById('image-upload').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                selectedFile = file;
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const img = document.getElementById('image-preview');
-                    img.src = event.target.result;
-                    img.style.display = 'block';
-                }
-                reader.readAsDataURL(file);
-            }
+
+        // Drag and Drop Logic
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+        function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-active'), false);
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-active'), false);
         });
 
-        document.getElementById('verify-btn').addEventListener('click', async () => {
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        });
+
+        fileInput.addEventListener('change', function(e) {
+            handleFiles(this.files);
+        });
+
+        function handleFiles(files) {
+            if (files.length > 0) {
+                selectedFile = files[0];
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    imgPreview.src = event.target.result;
+                    imgPreview.classList.remove('hidden');
+                    previewPlaceholder.classList.add('hidden');
+                }
+                reader.readAsDataURL(selectedFile);
+            }
+        }
+
+        // Verification Logic
+        verifyBtn.addEventListener('click', async () => {
             const docType = document.getElementById('doc-type').value;
             const docId = document.getElementById('doc-id').value;
 
-            if (!selectedFile) { alert("Please upload an image first."); return; }
+            if (!selectedFile) { alert("Please upload a document image first."); return; }
 
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('result-container').style.display = 'none';
-            document.getElementById('verify-btn').disabled = true;
+            // UI State: Loading
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('result-container').classList.add('hidden');
+            verifyBtn.disabled = true;
+            verifyBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Analyzing...';
 
             const formData = new FormData();
             formData.append("document_type", docType);
@@ -100,55 +234,65 @@
             formData.append("file", selectedFile);
 
             try {
-                // Ensure this URL points to your deployed backend when running on Vercel
-                // e.g., 'https://your-backend-url.onrender.com/api/v1/verify'
-                // Here we use relative path assuming backend is proxied, or local URL for local testing.
+                // IMPORTANT: Change this URL when deploying the backend!
                 const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
                     ? 'http://localhost:8000/api/v1/verify' 
                     : '/api/v1/verify'; 
 
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    body: formData
-                });
+                const response = await fetch(apiUrl, { method: 'POST', body: formData });
 
-                if (!response.ok) {
-                    throw new Error(`Server responded with status ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`Server responded with status ${response.status}`);
 
                 const data = await response.json();
                 
                 // Display Results
                 const resultBox = document.getElementById('result-container');
+                const banner = document.getElementById('decision-banner');
                 const decisionText = document.getElementById('decision-text');
+                const decisionIcon = document.getElementById('decision-icon');
                 
-                resultBox.className = "result-box"; // reset classes
+                // Reset classes
+                banner.className = "py-4 px-6 text-center text-white font-bold text-xl tracking-wide";
                 
                 if (data.decision === "ACCEPT") {
-                    resultBox.classList.add('result-accept');
-                    decisionText.innerText = "ACCEPT (Low Tamper Probability)";
+                    banner.classList.add('bg-green-500');
+                    decisionIcon.className = "fa-solid fa-circle-check mr-2";
+                    decisionText.innerText = "ACCEPT (Authentic)";
                 } else if (data.decision === "ESCALATE") {
-                    resultBox.classList.add('result-escalate');
-                    decisionText.innerText = "ESCALATE (High Risk / Validation Failed)";
+                    banner.classList.add('bg-red-500');
+                    decisionIcon.className = "fa-solid fa-circle-xmark mr-2";
+                    decisionText.innerText = "ESCALATE (High Risk / Failed)";
                 } else {
-                    resultBox.classList.add('result-review');
+                    banner.classList.add('bg-yellow-500');
+                    decisionIcon.className = "fa-solid fa-triangle-exclamation mr-2";
                     decisionText.innerText = "MANUAL REVIEW REQUIRED";
                 }
 
                 document.getElementById('score-val').innerText = data.visual_tamper_score.toFixed(4);
-                document.getElementById('validation-val').innerText = data.validation_passed ? "Passed" : "Failed";
-                document.getElementById('extracted-id-val').innerText = data.extracted_id || "None";
-                document.getElementById('reasons-log').innerText = data.reasons.join('\n');
                 
-                document.getElementById('loading').style.display = 'none';
-                resultBox.style.display = 'block';
+                const valEl = document.getElementById('validation-val');
+                if (data.validation_passed) {
+                    valEl.innerHTML = '<i class="fa-solid fa-check text-green-500 mr-2"></i> <span class="text-green-700">Passed</span>';
+                } else {
+                    valEl.innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-2"></i> <span class="text-red-700">Failed</span>';
+                }
+
+                document.getElementById('extracted-id-val').innerText = data.extracted_id || "Not Found";
+                
+                // Format logs
+                const formattedLogs = data.reasons.map(r => `> ${r}`).join('\n');
+                document.getElementById('reasons-log').innerText = `> Starting analysis pipeline...\n> Model Loaded\n${formattedLogs}\n> Analysis Complete.`;
+                
+                resultBox.classList.remove('hidden');
 
             } catch (e) {
                 console.error(e);
                 alert("Error connecting to the backend API. Ensure the backend server is running.\n\nError: " + e.message);
-                document.getElementById('loading').style.display = 'none';
             } finally {
-                document.getElementById('verify-btn').disabled = false;
+                // UI State: Reset Loading
+                document.getElementById('loading').classList.add('hidden');
+                verifyBtn.disabled = false;
+                verifyBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass mr-2"></i> Run Evidence Fusion Check';
             }
         });
     </script>
