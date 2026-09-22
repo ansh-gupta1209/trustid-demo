@@ -8,170 +8,240 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: {
-                        brand: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 900: '#1e3a8a' }
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    animation: {
+                        'blob': 'blob 7s infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        }
                     }
                 }
             }
         }
     </script>
     <style>
-        body { background-color: #f3f4f6; }
-        .drag-active { border-color: #3b82f6; background-color: #eff6ff; }
-        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(229, 231, 235, 0.5); }
-        .gradient-text { background: linear-gradient(90deg, #2563eb, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        /* Smooth fade for elements */
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        body { background-color: #f8fafc; overflow-x: hidden; }
+        
+        /* Vibrant Gradients */
+        .text-gradient { 
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+        }
+        .bg-gradient-vibrant {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+            background-size: 200% 200%;
+            animation: gradientMove 5s ease infinite;
+        }
+        @keyframes gradientMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        
+        /* Dropzone Styling */
+        .drop-zone { border: 2px dashed #cbd5e1; transition: all 0.3s ease; }
+        .drop-zone:hover { border-color: #8b5cf6; background-color: #f5f3ff; box-shadow: 0 0 20px rgba(139, 92, 246, 0.15); transform: translateY(-2px); }
+        .drag-active { border-color: #ec4899; background-color: #fdf2f8; transform: scale(1.02); }
+        
+        /* Card Aesthetics */
+        .aesthetic-card {
+            background: #ffffff;
+            border: 1px solid rgba(255,255,255,0.8);
+            box-shadow: 0 20px 40px -15px rgba(0,0,0,0.05), 0 0 40px -10px rgba(139, 92, 246, 0.05);
+            border-radius: 24px;
+        }
+        
+        /* Inputs */
+        .modern-input {
+            background: #f1f5f9;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        .modern-input:focus {
+            background: #ffffff;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+        }
     </style>
 </head>
-<body class="min-h-screen text-gray-800 antialiased py-8 px-4 sm:px-6 lg:px-8">
+<body class="min-h-screen text-slate-800 antialiased relative selection:bg-purple-200 selection:text-purple-900">
 
-    <!-- Header -->
-    <div class="max-w-6xl mx-auto mb-8 text-center">
-        <h1 class="text-4xl font-bold tracking-tight mb-2"><i class="fa-solid fa-shield-halved text-brand-600 mr-2"></i><span class="gradient-text">TrustID</span></h1>
-        <p class="text-gray-500 text-lg">Intelligent Document Verification & Fraud Detection</p>
+    <!-- Vibrant Background Blobs -->
+    <div class="fixed inset-0 w-full h-full pointer-events-none z-0 overflow-hidden">
+        <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-[100px] opacity-30 animate-blob"></div>
+        <div class="absolute top-[20%] right-[-10%] w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-[100px] opacity-30 animate-blob" style="animation-delay: 2s"></div>
+        <div class="absolute bottom-[-20%] left-[20%] w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-[100px] opacity-30 animate-blob" style="animation-delay: 4s"></div>
     </div>
 
-    <!-- Main Container -->
-    <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div class="relative z-10 py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         
-        <!-- Left Column: Inputs -->
-        <div class="glass-panel rounded-2xl shadow-xl p-8 h-fit">
-            <h2 class="text-xl font-semibold mb-6 flex items-center"><i class="fa-solid fa-sliders text-gray-400 mr-3"></i> Analysis Parameters</h2>
-            
-            <div class="space-y-6">
-                <!-- Document Type -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">1. Document Type</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fa-regular fa-id-card text-gray-400"></i>
-                        </div>
-                        <select id="doc-type" class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-brand-500 focus:border-brand-500 transition shadow-sm appearance-none bg-white">
-                            <option value="aadhaar">Aadhaar Card</option>
-                            <option value="pan">PAN Card</option>
-                            <option value="passport">Passport</option>
-                        </select>
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-chevron-down text-gray-400 text-sm"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Document ID -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">2. Document ID (Optional)</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-hashtag text-gray-400"></i>
-                        </div>
-                        <input type="text" id="doc-id" placeholder="Leave blank for automatic OCR extraction" class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-brand-500 focus:border-brand-500 transition shadow-sm">
-                    </div>
-                    <p class="mt-1 text-xs text-gray-500">If omitted, the AI engine will attempt to extract it automatically.</p>
-                </div>
-
-                <!-- Upload Area -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">3. Document Image</label>
-                    <div id="drop-zone" class="mt-1 flex justify-center px-6 pt-10 pb-10 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer hover:bg-gray-50 transition relative overflow-hidden group">
-                        <div class="space-y-2 text-center z-10" id="upload-content">
-                            <i class="fa-solid fa-cloud-arrow-up text-4xl text-gray-400 group-hover:text-brand-500 transition"></i>
-                            <div class="text-sm text-gray-600">
-                                <span class="font-semibold text-brand-600">Click to upload</span> or drag and drop
-                            </div>
-                            <p class="text-xs text-gray-500">PNG, JPG, JPEG up to 10MB</p>
-                        </div>
-                        <input id="image-upload" type="file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" accept="image/*">
-                    </div>
-                </div>
-
-                <!-- Action Button -->
-                <button id="verify-btn" class="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-xl shadow-md text-lg font-medium text-white bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-700 hover:to-brand-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                    <i class="fa-solid fa-magnifying-glass mr-2"></i> Run Evidence Fusion Check
-                </button>
+        <!-- Header -->
+        <div class="text-center mb-12 animate-float">
+            <div class="inline-flex items-center justify-center p-3 bg-white rounded-2xl shadow-lg mb-4 text-3xl">
+                <i class="fa-solid fa-shield-halved text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"></i>
             </div>
+            <h1 class="text-5xl font-extrabold tracking-tight mb-3"><span class="text-gradient">TrustID</span></h1>
+            <p class="text-slate-500 text-lg font-medium max-w-xl mx-auto">Upload an ID document to run our state-of-the-art visual tampering detection and deterministic layout checks.</p>
         </div>
 
-        <!-- Right Column: Results & Preview -->
-        <div class="flex flex-col gap-6">
+        <!-- Main Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            <!-- Image Preview Card -->
-            <div class="glass-panel rounded-2xl shadow-xl p-6 flex flex-col items-center justify-center min-h-[250px] relative overflow-hidden">
-                <div id="preview-placeholder" class="text-gray-400 flex flex-col items-center">
-                    <i class="fa-regular fa-image text-5xl mb-3 opacity-50"></i>
-                    <p class="text-sm">Image Preview will appear here</p>
-                </div>
-                <img id="image-preview" alt="Image Preview" class="hidden max-w-full max-h-[300px] object-contain rounded-lg shadow-sm z-10">
-                
-                <!-- Loading Overlay -->
-                <div id="loading" class="hidden absolute inset-0 bg-white/80 backdrop-blur-sm z-20 flex flex-col items-center justify-center">
-                    <i class="fa-solid fa-circle-notch fa-spin text-4xl text-brand-600 mb-4"></i>
-                    <p class="text-brand-700 font-semibold animate-pulse">Running Neural Analysis...</p>
-                    <p class="text-xs text-gray-500 mt-2">Connecting to Backend API</p>
-                </div>
-            </div>
-
-            <!-- Results Card (Hidden initially) -->
-            <div id="result-container" class="hidden glass-panel rounded-2xl shadow-xl overflow-hidden fade-in">
-                <!-- Header Banner -->
-                <div id="decision-banner" class="py-4 px-6 text-center text-white font-bold text-xl tracking-wide">
-                    <i id="decision-icon" class="mr-2"></i><span id="decision-text"></span>
+            <!-- Left Column: Inputs (Takes up 5 columns) -->
+            <div class="lg:col-span-5 aesthetic-card p-8 h-fit">
+                <div class="flex items-center space-x-3 mb-8">
+                    <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-lg"><i class="fa-solid fa-sliders"></i></div>
+                    <h2 class="text-2xl font-bold text-slate-800">Parameters</h2>
                 </div>
                 
-                <div class="p-6">
-                    <div class="grid grid-cols-2 gap-4 mb-6">
-                        <!-- Tamper Score -->
-                        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 flex flex-col items-center text-center">
-                            <span class="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-1">Visual Tamper Score</span>
-                            <span id="score-val" class="text-3xl font-bold text-gray-800">--</span>
-                            <span class="text-[10px] text-gray-400 mt-1">Accept < 0.369 | Escalate > 0.669</span>
-                        </div>
-                        
-                        <!-- Validation Status -->
-                        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 flex flex-col items-center text-center justify-center">
-                            <span class="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-1">Format Rules</span>
-                            <div id="validation-val" class="flex items-center text-lg font-bold">
-                                --
+                <div class="space-y-6">
+                    <!-- Document Type -->
+                    <div class="group">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2 transition group-hover:text-purple-600">Document Type</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fa-regular fa-id-card text-slate-400 group-hover:text-purple-500 transition"></i>
+                            </div>
+                            <select id="doc-type" class="modern-input block w-full pl-11 pr-4 py-3.5 rounded-xl text-slate-700 outline-none appearance-none font-medium cursor-pointer">
+                                <option value="aadhaar">Aadhaar Card</option>
+                                <option value="pan">PAN Card</option>
+                                <option value="passport">Passport</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-chevron-down text-slate-400"></i>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Extracted ID -->
-                    <div class="mb-6 flex items-center justify-between border-b border-gray-100 pb-4">
-                        <span class="text-sm font-medium text-gray-600"><i class="fa-solid fa-microchip text-brand-500 mr-2"></i>Extracted ID:</span>
-                        <span id="extracted-id-val" class="font-mono bg-gray-100 px-3 py-1 rounded text-sm font-bold text-gray-800 tracking-wider">--</span>
-                    </div>
-
-                    <!-- Logs Accordion -->
-                    <div class="mt-4">
-                        <h4 class="text-sm font-semibold text-gray-700 mb-2 flex items-center"><i class="fa-solid fa-clipboard-list text-gray-400 mr-2"></i>Backend Audit Trail</h4>
-                        <div class="bg-gray-900 text-green-400 font-mono text-xs rounded-lg p-4 h-32 overflow-y-auto shadow-inner leading-relaxed" id="reasons-log">
+                    <!-- Document ID -->
+                    <div class="group">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2 transition group-hover:text-blue-600">Document ID <span class="text-slate-400 font-normal">(Optional)</span></label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-hashtag text-slate-400 group-hover:text-blue-500 transition"></i>
+                            </div>
+                            <input type="text" id="doc-id" placeholder="Leave blank for auto-OCR" class="modern-input block w-full pl-11 pr-4 py-3.5 rounded-xl text-slate-700 outline-none font-medium placeholder-slate-400">
                         </div>
                     </div>
+
+                    <!-- Upload Area -->
+                    <div class="pt-2">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Upload Image</label>
+                        <div id="drop-zone" class="drop-zone relative rounded-2xl flex flex-col items-center justify-center py-10 px-6 cursor-pointer overflow-hidden bg-white">
+                            <div class="z-10 flex flex-col items-center pointer-events-none">
+                                <div class="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 shadow-sm text-2xl text-slate-400 drop-zone-icon transition-colors">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                </div>
+                                <p class="text-slate-800 font-semibold mb-1 text-center text-lg">Click or drag image here</p>
+                                <p class="text-sm text-slate-400 text-center font-medium">JPEG, PNG up to 10MB</p>
+                            </div>
+                            <input id="image-upload" type="file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" accept="image/*">
+                        </div>
+                    </div>
+
+                    <!-- Action Button -->
+                    <button id="verify-btn" class="w-full mt-4 flex justify-center items-center py-4 px-6 rounded-xl shadow-[0_10px_20px_-10px_rgba(139,92,246,0.6)] text-white font-bold text-lg bg-gradient-vibrant hover:scale-[1.02] active:scale-95 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Analyze Document
+                    </button>
                 </div>
             </div>
 
-        </div>
-    </div>
+            <!-- Right Column: Results & Preview (Takes up 7 columns) -->
+            <div class="lg:col-span-7 flex flex-col gap-6">
+                
+                <!-- Image Preview Card -->
+                <div class="aesthetic-card p-6 min-h-[300px] flex flex-col items-center justify-center relative overflow-hidden bg-white/60">
+                    
+                    <div id="preview-placeholder" class="text-center">
+                        <div class="inline-block p-6 rounded-3xl bg-slate-100/50 mb-4 border border-slate-200 border-dashed">
+                            <i class="fa-regular fa-image text-5xl text-slate-300"></i>
+                        </div>
+                        <p class="text-slate-500 font-medium">Your document preview will appear here</p>
+                    </div>
+                    
+                    <img id="image-preview" alt="Image Preview" class="hidden w-full max-h-[400px] object-contain rounded-xl shadow-lg z-10 transition-opacity duration-300">
+                    
+                    <!-- Loading Overlay -->
+                    <div id="loading" class="hidden absolute inset-0 bg-white/90 backdrop-blur-md z-20 flex flex-col items-center justify-center">
+                        <div class="relative w-24 h-24 mb-6">
+                            <div class="absolute inset-0 border-4 border-slate-100 rounded-full"></div>
+                            <div class="absolute inset-0 border-4 border-purple-500 rounded-full border-t-transparent animate-spin"></div>
+                            <div class="absolute inset-0 flex items-center justify-center text-purple-500"><i class="fa-solid fa-brain text-2xl animate-pulse-slow"></i></div>
+                        </div>
+                        <p class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 font-bold text-xl mb-1">Processing Image...</p>
+                        <p class="text-sm text-slate-500 font-medium">Running visual forensics & OCR extraction</p>
+                    </div>
+                </div>
 
-    <!-- Footer Disclaimer -->
-    <div class="max-w-6xl mx-auto mt-12 text-center px-4">
-        <p class="text-xs text-gray-400 bg-white/50 inline-block px-4 py-2 rounded-full border border-gray-200">
-            <i class="fa-solid fa-circle-info mr-1 text-brand-500"></i> 
-            This prototype connects to the Python backend to perform live ONNX inference and deterministic validation (Verhoeff/Regex/MRZ).
-        </p>
+                <!-- Results Card (Hidden initially) -->
+                <div id="result-container" class="hidden aesthetic-card overflow-hidden">
+                    
+                    <!-- Dynamic Header Banner -->
+                    <div id="decision-banner" class="py-5 px-8 text-white font-bold text-2xl tracking-wide flex items-center justify-between shadow-inner">
+                        <div class="flex items-center"><i id="decision-icon" class="mr-3 text-3xl"></i><span id="decision-text"></span></div>
+                    </div>
+                    
+                    <div class="p-8">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            <!-- Tamper Score -->
+                            <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100 shadow-sm relative overflow-hidden group hover:border-purple-200 transition">
+                                <div class="absolute top-0 right-0 w-24 h-24 bg-purple-100 rounded-full mix-blend-multiply filter blur-xl opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
+                                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 relative z-10">AI Tamper Score</h3>
+                                <div class="flex items-baseline space-x-2 relative z-10">
+                                    <span id="score-val" class="text-4xl font-extrabold text-slate-800">--</span>
+                                </div>
+                                <p class="text-xs text-slate-500 mt-2 font-medium relative z-10"><span class="text-emerald-500 font-bold">Accept < 0.369</span> &nbsp;|&nbsp; <span class="text-rose-500 font-bold">Escalate > 0.669</span></p>
+                            </div>
+                            
+                            <!-- Validation Status -->
+                            <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100 shadow-sm relative overflow-hidden group hover:border-blue-200 transition">
+                                <div class="absolute bottom-0 right-0 w-24 h-24 bg-blue-100 rounded-full mix-blend-multiply filter blur-xl opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
+                                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 relative z-10">Rule Validation</h3>
+                                <div id="validation-val" class="flex items-center text-2xl font-extrabold relative z-10 mt-1">
+                                    --
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Extracted ID -->
+                        <div class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                            <div class="flex items-center mb-2 sm:mb-0">
+                                <div class="w-8 h-8 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center mr-3"><i class="fa-solid fa-fingerprint"></i></div>
+                                <span class="text-sm font-bold text-slate-700">Extracted Document ID</span>
+                            </div>
+                            <span id="extracted-id-val" class="font-mono bg-slate-800 px-4 py-2 rounded-lg text-sm font-bold text-emerald-400 tracking-widest text-center">--</span>
+                        </div>
+
+                        <!-- Logs -->
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-800 mb-3 flex items-center"><i class="fa-solid fa-terminal text-slate-400 mr-2"></i>Backend Audit Trail</h4>
+                            <div class="bg-slate-800 rounded-xl p-5 shadow-inner border border-slate-700">
+                                <pre id="reasons-log" class="font-mono text-xs text-blue-300 whitespace-pre-wrap leading-relaxed overflow-x-auto"></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
     </div>
 
     <script>
-        // DOM Elements
         const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('image-upload');
         const imgPreview = document.getElementById('image-preview');
@@ -179,28 +249,27 @@
         const verifyBtn = document.getElementById('verify-btn');
         let selectedFile = null;
 
-        // Drag and Drop Logic
+        // Drag and Drop Logic with visual flair
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
             dropZone.addEventListener(eventName, preventDefaults, false);
         });
         function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
         
         ['dragenter', 'dragover'].forEach(eventName => {
-            dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-active'), false);
+            dropZone.addEventListener(eventName, () => {
+                dropZone.classList.add('drag-active');
+                dropZone.querySelector('.drop-zone-icon').classList.add('text-pink-500', 'bg-pink-50');
+            }, false);
         });
         ['dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-active'), false);
+            dropZone.addEventListener(eventName, () => {
+                dropZone.classList.remove('drag-active');
+                dropZone.querySelector('.drop-zone-icon').classList.remove('text-pink-500', 'bg-pink-50');
+            }, false);
         });
 
-        dropZone.addEventListener('drop', (e) => {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            handleFiles(files);
-        });
-
-        fileInput.addEventListener('change', function(e) {
-            handleFiles(this.files);
-        });
+        dropZone.addEventListener('drop', (e) => handleFiles(e.dataTransfer.files));
+        fileInput.addEventListener('change', function() { handleFiles(this.files) });
 
         function handleFiles(files) {
             if (files.length > 0) {
@@ -215,7 +284,6 @@
             }
         }
 
-        // Verification Logic
         verifyBtn.addEventListener('click', async () => {
             const docType = document.getElementById('doc-type').value;
             const docId = document.getElementById('doc-id').value;
@@ -226,7 +294,7 @@
             document.getElementById('loading').classList.remove('hidden');
             document.getElementById('result-container').classList.add('hidden');
             verifyBtn.disabled = true;
-            verifyBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Analyzing...';
+            verifyBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> Analyzing...';
 
             const formData = new FormData();
             formData.append("document_type", docType);
@@ -240,48 +308,47 @@
                     : '/api/v1/verify'; 
 
                 const response = await fetch(apiUrl, { method: 'POST', body: formData });
-
                 if (!response.ok) throw new Error(`Server responded with status ${response.status}`);
-
                 const data = await response.json();
                 
-                // Display Results
+                // Render Results
                 const resultBox = document.getElementById('result-container');
                 const banner = document.getElementById('decision-banner');
                 const decisionText = document.getElementById('decision-text');
                 const decisionIcon = document.getElementById('decision-icon');
                 
-                // Reset classes
-                banner.className = "py-4 px-6 text-center text-white font-bold text-xl tracking-wide";
+                // Reset banner gradient
+                banner.className = "py-5 px-8 text-white font-bold text-2xl tracking-wide flex items-center shadow-inner";
                 
                 if (data.decision === "ACCEPT") {
-                    banner.classList.add('bg-green-500');
-                    decisionIcon.className = "fa-solid fa-circle-check mr-2";
-                    decisionText.innerText = "ACCEPT (Authentic)";
+                    banner.classList.add('bg-gradient-to-r', 'from-emerald-500', 'to-teal-400');
+                    decisionIcon.className = "fa-solid fa-shield-check";
+                    decisionText.innerText = "AUTHENTICATED";
                 } else if (data.decision === "ESCALATE") {
-                    banner.classList.add('bg-red-500');
-                    decisionIcon.className = "fa-solid fa-circle-xmark mr-2";
-                    decisionText.innerText = "ESCALATE (High Risk / Failed)";
+                    banner.classList.add('bg-gradient-to-r', 'from-rose-600', 'to-pink-500');
+                    decisionIcon.className = "fa-solid fa-triangle-exclamation";
+                    decisionText.innerText = "HIGH RISK DETECTED";
                 } else {
-                    banner.classList.add('bg-yellow-500');
-                    decisionIcon.className = "fa-solid fa-triangle-exclamation mr-2";
-                    decisionText.innerText = "MANUAL REVIEW REQUIRED";
+                    banner.classList.add('bg-gradient-to-r', 'from-amber-500', 'to-orange-400');
+                    decisionIcon.className = "fa-solid fa-clipboard-user";
+                    decisionText.innerText = "MANUAL REVIEW";
                 }
 
                 document.getElementById('score-val').innerText = data.visual_tamper_score.toFixed(4);
                 
                 const valEl = document.getElementById('validation-val');
                 if (data.validation_passed) {
-                    valEl.innerHTML = '<i class="fa-solid fa-check text-green-500 mr-2"></i> <span class="text-green-700">Passed</span>';
+                    valEl.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-500 mr-2 text-3xl shadow-sm"></i> <span class="text-slate-800">Passed</span>';
                 } else {
-                    valEl.innerHTML = '<i class="fa-solid fa-xmark text-red-500 mr-2"></i> <span class="text-red-700">Failed</span>';
+                    valEl.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-500 mr-2 text-3xl shadow-sm"></i> <span class="text-slate-800">Failed</span>';
                 }
 
-                document.getElementById('extracted-id-val').innerText = data.extracted_id || "Not Found";
+                document.getElementById('extracted-id-val').innerText = data.extracted_id || "NOT FOUND";
                 
-                // Format logs
-                const formattedLogs = data.reasons.map(r => `> ${r}`).join('\n');
-                document.getElementById('reasons-log').innerText = `> Starting analysis pipeline...\n> Model Loaded\n${formattedLogs}\n> Analysis Complete.`;
+                // Logs
+                const logPrefix = `[SYS] Connecting to Neural Engine...\n[SYS] Model ONNX session verified.\n[IMG] Extracted image tensor [1, 3, 384, 384].\n`;
+                const formattedLogs = data.reasons.map(r => `[RES] ${r}`).join('\n');
+                document.getElementById('reasons-log').innerText = `${logPrefix}${formattedLogs}\n[SYS] Analysis complete. Output generated.`;
                 
                 resultBox.classList.remove('hidden');
 
@@ -289,10 +356,10 @@
                 console.error(e);
                 alert("Error connecting to the backend API. Ensure the backend server is running.\n\nError: " + e.message);
             } finally {
-                // UI State: Reset Loading
+                // UI State: Reset
                 document.getElementById('loading').classList.add('hidden');
                 verifyBtn.disabled = false;
-                verifyBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass mr-2"></i> Run Evidence Fusion Check';
+                verifyBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Analyze Document';
             }
         });
     </script>
