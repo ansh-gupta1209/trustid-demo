@@ -333,10 +333,8 @@
             formData.append("file", selectedFile);
 
             try {
-                // IMPORTANT: Change this URL when deploying the backend!
-                const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-                    ? 'http://localhost:8000/api/v1/verify' 
-                    : '/api/v1/verify'; 
+                // Backend URL for Render deployment
+                const apiUrl = 'https://trustid-backend-c695.onrender.com/api/v1/verify'; 
 
                 const response = await fetch(apiUrl, { method: 'POST', body: formData });
                 if (!response.ok) throw new Error(`Server responded with status ${response.status}`);

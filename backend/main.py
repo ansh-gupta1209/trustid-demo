@@ -117,6 +117,14 @@ def find_id_in_text(text: str, doc_type: str) -> str:
     # MRZ is harder to regex generically from messy OCR, usually handled by specific OCR setups
     return ""
 
+@app.get("/")
+async def root():
+    return {"status": "ok"}
+
+@app.get("/health")
+async def health():
+    return {"status": "healthy"}
+
 @app.post("/api/v1/verify")
 async def verify_document(
     document_type: str = Form(...),
@@ -124,6 +132,7 @@ async def verify_document(
     file: UploadFile = File(...)
 ):
     image_bytes = await file.read()
+    reasons = []
     reasons = []
     
     # 1. OCR (if ID is not provided)
