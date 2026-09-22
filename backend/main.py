@@ -1,6 +1,7 @@
 import os
 import re
 from fastapi import FastAPI, UploadFile, File, Form
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import onnxruntime as ort
 from PIL import Image
@@ -12,6 +13,15 @@ from mrz.checker.td2 import TD2CodeChecker
 from mrz.checker.td1 import TD1CodeChecker
 
 app = FastAPI(title="TrustID API")
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, replace with your Vercel URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Load ONNX Model globally
 MODEL_PATH = os.path.join(os.path.dirname(__file__), '..', 'public', 'demo_assets', 'model.onnx')
