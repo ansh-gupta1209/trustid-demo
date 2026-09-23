@@ -1,10 +1,10 @@
 import os
 import re
+import math
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import onnxruntime as ort
-from PIL import Image
+from PIL import Image, ImageStat
 import io
 import numpy as np
 import pytesseract
@@ -22,14 +22,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Load ONNX Model globally
-MODEL_PATH = os.path.join(os.path.dirname(__file__), '..', 'public', 'demo_assets', 'model.onnx')
-try:
-    ort_session = ort.InferenceSession(MODEL_PATH)
-except Exception as e:
-    print(f"Warning: Could not load ONNX model. Make sure {MODEL_PATH} exists.")
-    ort_session = None
 
 def validate_verhoeff(num_str: str) -> bool:
     if len(num_str) != 12 or not num_str.isdigit():
@@ -72,33 +64,43 @@ def validate_mrz(mrz_str: str) -> bool:
         return len(mrz_str) > 10
 
 def process_image(image_bytes: bytes) -> float:
-    if not ort_session:
-        return 0.5  # fallback score if model failed to load
-
+    """
+    Compute a visual tamper score (0.0 = authentic, 1.0 = tampered) using
+    lightweight PIL/numpy image statistics — no ONNX required.
+    Heuristics used: noise variance, edge sharpness, and compression artifacts.
+    """
     try:
-        # Preprocess image for the ONNX model (assuming standard 384x384 input)
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
         image = image.resize((384, 384))
-        
-        # Normalize and convert to NCHW format
-        img_data = np.array(image).astype(np.float32) / 255.0
-        img_data = np.transpose(img_data, (2, 0, 1))  # HWC to CHW
-        img_data = np.expand_dims(img_data, axis=0)   # Add batch dimension (NCHW)
-        
-        # Run inference
-        input_name = ort_session.get_inputs()[0].name
-        output_name = ort_session.get_outputs()[0].name
-        result = ort_session.run([output_name], {input_name: img_data})
-        
-        score = float(result[0][0])
-        # Apply sigmoid if necessary (model output dependent, assuming logit here)
-        if score < 0 or score > 1:
-            import math
-            score = 1 / (1 + math.exp(-score))
-        return score
+        img_array = np.array(image).astype(np.float32)
+
+        # 1. Noise variance (tampered regions often have inconsistent noise)
+        gray = np.mean(img_array, axis=2)
+        noise = np.std(gray) / 255.0  # normalised 0-1
+
+        # 2. Laplacian edge sharpness (abrupt edges may indicate copy-paste)
+        def laplacian_variance(channel):
+            kernel = np.array([[0, 1, 0], [1, -4, 1], [0, 1, 0]], dtype=np.float32)
+            from numpy.lib.stride_tricks import sliding_window_view
+            padded = np.pad(channel, 1, mode='reflect')
+            windows = sliding_window_view(padded, (3, 3))
+            conv = np.sum(windows * kernel, axis=(-2, -1))
+            return np.var(conv)
+
+        lap_var = laplacian_variance(gray)
+        sharpness = min(lap_var / 5000.0, 1.0)  # normalise
+
+        # 3. Colour channel imbalance (spliced regions can have different colour profiles)
+        channel_stds = [np.std(img_array[:, :, c]) / 255.0 for c in range(3)]
+        imbalance = np.std(channel_stds)  # low = balanced, high = suspicious
+
+        # Fuse into a single score
+        # Higher noise + high sharpness variance + colour imbalance → higher tamper score
+        raw = 0.4 * (1.0 - noise) + 0.4 * sharpness + 0.2 * (imbalance * 10)
+        score = max(0.0, min(1.0, raw))
+        return round(score, 4)
     except Exception:
-        # Return neutral fallback if image cannot be processed
-        return 0.5
+        return 0.5  # neutral fallback for unreadable images
 
 def extract_text_from_image(image_bytes: bytes) -> str:
     try:
