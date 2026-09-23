@@ -131,61 +131,64 @@ async def verify_document(
     document_id: str = Form(""),
     file: UploadFile = File(...)
 ):
-    image_bytes = await file.read()
-    reasons = []
-    reasons = []
-    
-    # 1. OCR (if ID is not provided)
-    if not document_id:
-        text = extract_text_from_image(image_bytes)
-        document_id = find_id_in_text(text, document_type.lower())
-        if document_id:
-            reasons.append(f"OCR successfully extracted ID: {document_id}")
-        else:
-            reasons.append("OCR failed to extract ID. Using generic validation.")
+    try:
+        image_bytes = await file.read()
+        reasons = []
+        
+        # 1. OCR (if ID is not provided)
+        if not document_id:
+            text = extract_text_from_image(image_bytes)
+            document_id = find_id_in_text(text, document_type.lower())
+            if document_id:
+                reasons.append(f"OCR successfully extracted ID: {document_id}")
+            else:
+                reasons.append("OCR failed to extract ID. Using generic validation.")
 
-    # 2. Validation Rules
-    validation_passed = False
-    doc_type_lower = document_type.lower()
-    
-    if doc_type_lower == "aadhaar":
-        if document_id:
-            validation_passed = validate_verhoeff(document_id)
-            reasons.append("Verhoeff check passed" if validation_passed else f"Verhoeff check failed for {document_id}")
+        # 2. Validation Rules
+        validation_passed = False
+        doc_type_lower = document_type.lower()
+        
+        if doc_type_lower == "aadhaar":
+            if document_id:
+                validation_passed = validate_verhoeff(document_id)
+                reasons.append("Verhoeff check passed" if validation_passed else f"Verhoeff check failed for {document_id}")
+            else:
+                reasons.append("Verhoeff check skipped (No ID)")
+        elif doc_type_lower == "pan":
+            if document_id:
+                validation_passed = validate_pan(document_id)
+                reasons.append("PAN format valid" if validation_passed else f"PAN format invalid for {document_id}")
+            else:
+                reasons.append("PAN check skipped (No ID)")
+        elif doc_type_lower == "passport":
+            if document_id:
+                validation_passed = validate_mrz(document_id)
+                reasons.append("MRZ check passed" if validation_passed else "MRZ check failed")
+            else:
+                reasons.append("MRZ check skipped (No ID)")
         else:
-            reasons.append("Verhoeff check skipped (No ID)")
-    elif doc_type_lower == "pan":
-        if document_id:
-            validation_passed = validate_pan(document_id)
-            reasons.append("PAN format valid" if validation_passed else f"PAN format invalid for {document_id}")
-        else:
-            reasons.append("PAN check skipped (No ID)")
-    elif doc_type_lower == "passport":
-        if document_id:
-            validation_passed = validate_mrz(document_id)
-            reasons.append("MRZ check passed" if validation_passed else "MRZ check failed")
-        else:
-            reasons.append("MRZ check skipped (No ID)")
-    else:
-        reasons.append("Unknown document type")
+            reasons.append("Unknown document type")
 
-    # 3. AI Inference
-    tamper_score = process_image(image_bytes)
-    reasons.append(f"Visual Tamper Score calculated: {tamper_score:.4f}")
+        # 3. AI Inference
+        tamper_score = process_image(image_bytes)
+        reasons.append(f"Visual Tamper Score calculated: {tamper_score:.4f}")
 
-    # 4. Fusion Logic
-    # Thresholds: 0.519 +/- 0.15
-    decision = "REVIEW"
-    if tamper_score < 0.369 and validation_passed:
-        decision = "ACCEPT"
-    elif tamper_score > 0.669 or not validation_passed:
-        decision = "ESCALATE"
+        # 4. Fusion Logic
+        # Thresholds: 0.519 +/- 0.15
+        decision = "REVIEW"
+        if tamper_score < 0.369 and validation_passed:
+            decision = "ACCEPT"
+        elif tamper_score > 0.669 or not validation_passed:
+            decision = "ESCALATE"
 
-    return {
-        "status": "success",
-        "decision": decision,
-        "visual_tamper_score": tamper_score,
-        "validation_passed": validation_passed,
-        "reasons": reasons,
-        "extracted_id": document_id
-    }
+        return {
+            "status": "success",
+            "decision": decision,
+            "visual_tamper_score": tamper_score,
+            "validation_passed": validation_passed,
+            "reasons": reasons,
+            "extracted_id": document_id
+        }
+    except Exception as e:
+        import traceback
+        return {"status": "error", "error": str(e), "traceback": traceback.format_exc()}
