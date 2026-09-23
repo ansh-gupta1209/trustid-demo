@@ -73,28 +73,32 @@ def validate_mrz(mrz_str: str) -> bool:
 
 def process_image(image_bytes: bytes) -> float:
     if not ort_session:
-        return 0.5 # fallback score if model failed to load
+        return 0.5  # fallback score if model failed to load
 
-    # Preprocess image for the ONNX model (assuming standard 384x384 input)
-    image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-    image = image.resize((384, 384))
-    
-    # Normalize and convert to NCHW format
-    img_data = np.array(image).astype(np.float32) / 255.0
-    img_data = np.transpose(img_data, (2, 0, 1)) # HWC to CHW
-    img_data = np.expand_dims(img_data, axis=0)  # Add batch dimension (NCHW)
-    
-    # Run inference
-    input_name = ort_session.get_inputs()[0].name
-    output_name = ort_session.get_outputs()[0].name
-    result = ort_session.run([output_name], {input_name: img_data})
-    
-    score = float(result[0][0])
-    # Apply sigmoid if necessary (model output dependent, assuming logit here)
-    if score < 0 or score > 1:
-        import math
-        score = 1 / (1 + math.exp(-score))
-    return score
+    try:
+        # Preprocess image for the ONNX model (assuming standard 384x384 input)
+        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        image = image.resize((384, 384))
+        
+        # Normalize and convert to NCHW format
+        img_data = np.array(image).astype(np.float32) / 255.0
+        img_data = np.transpose(img_data, (2, 0, 1))  # HWC to CHW
+        img_data = np.expand_dims(img_data, axis=0)   # Add batch dimension (NCHW)
+        
+        # Run inference
+        input_name = ort_session.get_inputs()[0].name
+        output_name = ort_session.get_outputs()[0].name
+        result = ort_session.run([output_name], {input_name: img_data})
+        
+        score = float(result[0][0])
+        # Apply sigmoid if necessary (model output dependent, assuming logit here)
+        if score < 0 or score > 1:
+            import math
+            score = 1 / (1 + math.exp(-score))
+        return score
+    except Exception:
+        # Return neutral fallback if image cannot be processed
+        return 0.5
 
 def extract_text_from_image(image_bytes: bytes) -> str:
     try:
