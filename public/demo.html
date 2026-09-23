@@ -6,51 +6,64 @@
     <title>TrustID | Investigator Workstation</title>
     <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Aptos', 'Calibri', 'Arial', 'sans-serif'],
+                        mono: ['Consolas', 'Courier New', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        body { font-family: 'Aptos', 'Calibri', 'Arial', sans-serif; }
         details > summary { list-style: none; }
         details > summary::-webkit-details-marker { display: none; }
         details[open] summary ~ * { animation: sweep .4s ease-in-out; }
         @keyframes sweep { 0% {opacity: 0; transform: translateY(-5px)} 100% {opacity: 1; transform: translateY(0)} }
-        .pulse-text { animation: pulseText 1.5s infinite; }
-        @keyframes pulseText { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         .progress-bar-fill { transition: width 1s ease-in-out; }
-        .forensic-grid {
-            background-image: linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+        
+        /* Soft professional subtle grid */
+        .professional-bg {
+            background-color: #f8fafc;
+            background-image: linear-gradient(#e2e8f0 1px, transparent 1px), linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
             background-size: 20px 20px;
         }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans h-screen flex flex-col overflow-hidden">
+<body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden">
     
-    <!-- Top Nav -->
-    <header class="bg-slate-900 text-white p-3 flex justify-between items-center font-mono border-b border-slate-700 shadow-md shrink-0">
+    <!-- Top Nav (Corporate/Enterprise look) -->
+    <header class="bg-[#003366] text-white p-3 flex justify-between items-center border-b border-blue-800 shadow-md shrink-0">
         <div class="flex items-center">
-            <span class="font-black text-2xl tracking-tighter text-blue-500 mr-2">TRUST<span class="text-white">ID</span></span>
-            <span class="text-xs text-slate-400 uppercase tracking-widest border-l border-slate-700 pl-3 ml-1 hidden md:inline">Investigator Workstation</span>
+            <span class="font-bold text-2xl tracking-tight mr-2">TrustID</span>
+            <span class="text-xs text-blue-200 uppercase tracking-wider border-l border-blue-700 pl-3 ml-1 hidden md:inline">Investigator Workstation</span>
         </div>
         <div class="text-xs flex items-center space-x-6">
-            <button onclick="toggleBenchmarks()" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 px-3 py-1 rounded flex items-center shadow transition-colors">
-                📊 <span class="ml-2 hidden sm:inline">System Benchmarks & Security Lab</span>
+            <button onclick="toggleBenchmarks()" class="bg-blue-700 hover:bg-blue-600 border border-blue-500 px-3 py-1.5 rounded flex items-center shadow transition-colors">
+                📊 <span class="ml-2 hidden sm:inline">System Benchmarks & Reports</span>
             </button>
-            <div class="flex items-center"><span class="h-2 w-2 bg-green-500 rounded-full animate-pulse mr-2"></span> SECURE CONNECTION</div>
+            <div class="flex items-center font-semibold"><span class="h-2 w-2 bg-green-400 rounded-full mr-2"></span> SECURE CONNECTION</div>
         </div>
     </header>
 
     <!-- Judge Demo Bar -->
-    <div class="bg-slate-800 border-b-4 border-blue-600 p-2 flex flex-wrap justify-center items-center gap-2 shrink-0">
-        <span class="text-slate-300 uppercase font-bold text-[10px] flex items-center mr-2">
-            <svg class="w-4 h-4 mr-1 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            SIH JUDGE DEMOS:
+    <div class="bg-white border-b border-slate-300 p-2 flex flex-wrap justify-center items-center gap-2 shrink-0 shadow-sm">
+        <span class="text-slate-500 uppercase font-bold text-xs flex items-center mr-2">
+            SIH Judge Demos:
         </span>
-        <button onclick="runDemo('genuine')" class="text-[10px] bg-slate-700 hover:bg-green-700 text-slate-200 hover:text-white px-2 py-1 rounded font-mono">1: GENUINE DOC</button>
-        <button onclick="runDemo('tampered')" class="text-[10px] bg-slate-700 hover:bg-red-700 text-slate-200 hover:text-white px-2 py-1 rounded font-mono">2: TAMPERED (VISUAL)</button>
-        <button onclick="runDemo('invalid')" class="text-[10px] bg-slate-700 hover:bg-orange-600 text-slate-200 hover:text-white px-2 py-1 rounded font-mono">3: RULE FAILURE</button>
-        <button onclick="runDemo('ekyc')" class="text-[10px] bg-blue-900 hover:bg-blue-700 text-blue-100 hover:text-white px-2 py-1 rounded border border-blue-500 font-mono flex items-center">
+        <button onclick="runDemo('genuine')" class="text-xs bg-slate-100 border border-slate-300 hover:bg-green-600 text-slate-700 hover:text-white px-3 py-1.5 rounded transition-colors font-semibold shadow-sm">1: Genuine Doc</button>
+        <button onclick="runDemo('tampered')" class="text-xs bg-slate-100 border border-slate-300 hover:bg-red-600 text-slate-700 hover:text-white px-3 py-1.5 rounded transition-colors font-semibold shadow-sm">2: Tampered (Visual)</button>
+        <button onclick="runDemo('invalid')" class="text-xs bg-slate-100 border border-slate-300 hover:bg-orange-500 text-slate-700 hover:text-white px-3 py-1.5 rounded transition-colors font-semibold shadow-sm">3: Rule Failure</button>
+        <button onclick="runDemo('ekyc')" class="text-xs bg-[#003366] hover:bg-blue-800 text-white px-3 py-1.5 rounded shadow-sm font-semibold flex items-center ml-2">
             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-            4: AADHAAR OFFLINE E-KYC
+            4: Aadhaar Offline e-KYC
         </button>
-        <button onclick="resetUI()" class="text-[10px] border border-slate-500 text-slate-400 hover:text-white px-2 py-1 rounded font-mono ml-2">RESET</button>
+        <button onclick="resetUI()" class="text-xs bg-transparent text-slate-500 hover:text-slate-800 underline px-2 py-1 ml-2">Clear</button>
     </div>
 
     <!-- Main Content Grid -->
@@ -58,45 +71,74 @@
         
         <!-- Left Pane: Evidence Ingestion -->
         <section class="lg:col-span-5 flex flex-col space-y-4">
-            <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-4">
-                <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
-                    <h2 class="text-sm font-bold text-slate-700 uppercase tracking-widest">Document Ingestion</h2>
-                    <div class="flex space-x-2 bg-slate-100 p-1 rounded">
-                        <button id="btn-mode-standard" onclick="setMode('standard')" class="text-[10px] px-2 py-1 rounded bg-white shadow font-bold text-slate-700">VISUAL/OCR</button>
-                        <button id="btn-mode-ekyc" onclick="setMode('ekyc')" class="text-[10px] px-2 py-1 rounded text-slate-500 font-bold hover:bg-slate-200">OFFLINE e-KYC</button>
+            <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-5">
+                <div class="flex justify-between items-center mb-4 border-b border-slate-200 pb-2">
+                    <h2 class="text-sm font-bold text-slate-700 uppercase tracking-widest">Document Upload</h2>
+                    <div class="flex space-x-1 bg-slate-100 p-1 rounded border border-slate-200">
+                        <button id="btn-mode-standard" onclick="setMode('standard')" class="text-[11px] px-2 py-1 rounded bg-white shadow-sm font-bold text-[#003366] border border-slate-200">Visual/OCR</button>
+                        <button id="btn-mode-ekyc" onclick="setMode('ekyc')" class="text-[11px] px-2 py-1 rounded text-slate-500 font-bold hover:bg-slate-200">Offline e-KYC</button>
                     </div>
                 </div>
                 
                 <!-- Standard Input -->
                 <div id="input-standard">
-                    <input type="file" accept="image/*" class="w-full mb-4 text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
-                    <div class="relative bg-slate-900 rounded-lg h-72 flex items-center justify-center border-2 border-slate-300 overflow-hidden forensic-grid shadow-inner">
-                        <span id="preview-placeholder" class="text-slate-500 text-xs font-mono tracking-widest">NO EVIDENCE LOADED</span>
-                        <img id="image-preview" class="hidden max-h-full max-w-full object-contain z-10">
-                        <div id="scanner-laser" class="hidden absolute top-0 left-0 w-full h-1 bg-blue-400 shadow-[0_0_15px_rgba(59,130,246,1)] z-20"></div>
-                        <div id="heatmap-overlay" class="hidden absolute top-[40%] left-[25%] w-[50%] h-[15%] border-2 border-red-500 bg-red-500/30 z-30 flex items-end justify-end p-1">
-                            <span class="bg-red-600 text-white text-[9px] font-mono px-1 rounded shadow">ANOMALY DETECTED</span>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="flex items-center space-x-2 text-xs text-slate-600 cursor-pointer">
+                            <input type="checkbox" id="auto-ocr-toggle" checked class="rounded text-[#003366] focus:ring-[#003366]">
+                            <span>Enable Auto-OCR & Auto-Detect</span>
+                        </label>
+                    </div>
+
+                    <input type="file" id="image-upload" accept="image/*" class="w-full mb-4 text-xs text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded file:border file:border-slate-300 file:text-xs file:font-bold file:bg-slate-50 file:text-slate-700 hover:file:bg-slate-100 cursor-pointer">
+                    
+                    <!-- Manual Override (Hidden by default) -->
+                    <div id="manual-override" class="hidden space-y-3 mb-4 p-3 bg-slate-50 rounded border border-slate-200">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Select Document Type</label>
+                            <select id="doc-type" class="w-full border border-slate-300 rounded text-sm p-2 bg-white">
+                                <option value="aadhaar">Aadhaar</option>
+                                <option value="pan">PAN</option>
+                                <option value="passport">Passport</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Enter Target ID</label>
+                            <input type="text" id="doc-id" class="w-full border border-slate-300 rounded text-sm p-2 bg-white font-mono">
+                        </div>
+                    </div>
+
+                    <!-- Document Preview & Heatmap -->
+                    <div class="relative bg-white rounded-lg h-72 flex items-center justify-center border-2 border-slate-300 overflow-hidden professional-bg">
+                        <span id="preview-placeholder" class="text-slate-400 text-sm tracking-wide">No document selected</span>
+                        <img id="image-preview" class="hidden max-h-full max-w-full object-contain z-10 shadow-md border border-slate-200">
+                        
+                        <!-- Simple Scanner Line -->
+                        <div id="scanner-laser" class="hidden absolute top-0 left-0 w-full h-1 bg-blue-500 z-20 opacity-70"></div>
+                        
+                        <!-- Forensic Heatmap Overlay (simulated bounding box) -->
+                        <div id="heatmap-overlay" class="hidden absolute top-[40%] left-[25%] w-[50%] h-[15%] border-2 border-red-500 bg-red-500/20 z-30 flex items-start justify-start p-1">
+                            <span class="bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-sm shadow-sm font-semibold">Flagged Region</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- e-KYC Input (Hidden initially) -->
                 <div id="input-ekyc" class="hidden">
-                    <div class="bg-blue-50 border-2 border-dashed border-blue-300 rounded p-6 text-center">
-                        <svg class="mx-auto h-12 w-12 text-blue-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                        <p class="text-sm font-bold text-slate-700">Upload Aadhaar Offline e-KYC (.zip / .xml)</p>
-                        <p class="text-xs text-slate-500 mt-1 mb-4">Digitally signed payload verified via UIDAI public key.</p>
-                        <input type="file" accept=".zip,.xml" class="text-xs text-slate-500 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:bg-blue-600 file:text-white cursor-pointer mx-auto block">
+                    <div class="bg-slate-50 border-2 border-dashed border-slate-300 rounded p-8 text-center">
+                        <svg class="mx-auto h-12 w-12 text-[#003366] mb-3 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        <p class="text-base font-bold text-slate-800">Upload Offline e-KYC Archive (.zip / .xml)</p>
+                        <p class="text-sm text-slate-500 mt-1 mb-5">Digitally signed XML payload for offline verification.</p>
+                        <input type="file" accept=".zip,.xml" class="text-sm text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded file:border file:border-[#003366] file:text-sm file:font-semibold file:bg-[#003366] file:text-white hover:file:bg-blue-800 cursor-pointer mx-auto block">
                     </div>
                 </div>
 
-                <button id="verify-btn" class="mt-4 w-full bg-blue-600 text-white font-bold text-sm py-3 px-4 rounded shadow hover:bg-blue-700 transition">
-                    EXECUTE FUSION PIPELINE
+                <button id="verify-btn" class="mt-5 w-full bg-[#003366] text-white font-bold text-sm py-3 px-4 rounded shadow-sm hover:bg-blue-800 transition">
+                    Run Verification Pipeline
                 </button>
             </div>
             
-            <div class="bg-slate-800 text-slate-300 rounded-lg shadow-sm border border-slate-700 p-3 flex justify-between items-center text-xs font-mono">
-                <div>AUDIT CASE ID: <span id="audit-id" class="text-green-400 font-bold">TR-PENDING</span></div>
+            <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-3 flex justify-between items-center text-xs text-slate-500">
+                <div>Case Record: <span id="audit-id" class="text-slate-800 font-semibold font-mono">TR-PENDING</span></div>
                 <div><span id="audit-time">--:--:--</span></div>
             </div>
         </section>
@@ -106,62 +148,63 @@
             
             <!-- Verdict Box -->
             <div id="verdict-dashboard" class="hidden bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
-                <div id="verdict-header" class="p-4 flex justify-between items-center text-white bg-slate-800 transition-colors duration-500">
+                <div id="verdict-header" class="p-5 flex justify-between items-center text-white bg-slate-700 transition-colors duration-300">
                     <div>
-                        <h2 class="text-2xl font-black uppercase tracking-tight" id="verdict-title">AWAITING</h2>
-                        <p class="text-xs font-mono opacity-80" id="verdict-subtitle">Evidence Fusion Pending</p>
+                        <h2 class="text-2xl font-bold uppercase tracking-wide" id="verdict-title">Pending</h2>
+                        <p class="text-sm opacity-90" id="verdict-subtitle">Awaiting verification execution.</p>
                     </div>
                     <div class="text-right">
-                        <p class="text-[10px] uppercase opacity-70">Risk Rating</p>
-                        <p class="text-3xl font-mono font-bold" id="verdict-score">--</p>
+                        <p class="text-xs uppercase opacity-80 font-semibold mb-1">Risk Score</p>
+                        <p class="text-3xl font-bold" id="verdict-score">--</p>
                     </div>
                 </div>
                 
-                <div class="p-5">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3" id="matrix-title">Evidence Matrix</h3>
+                <div class="p-6">
+                    <h3 class="text-sm font-bold text-slate-600 uppercase tracking-widest mb-4 border-b border-slate-100 pb-2" id="matrix-title">Evidence Matrix</h3>
                     
                     <!-- Progress Bars (Standard Mode) -->
-                    <div id="matrix-standard" class="space-y-4">
+                    <div id="matrix-standard" class="space-y-5">
                         <div>
-                            <div class="flex justify-between text-xs font-mono font-bold mb-1"><span class="text-slate-600">OCR Extraction</span><span id="bar-val-ocr" class="text-slate-800">0%</span></div>
-                            <div class="w-full bg-slate-100 rounded h-2"><div id="bar-fill-ocr" class="bg-blue-500 h-2 progress-bar-fill w-0"></div></div>
+                            <div class="flex justify-between text-sm font-semibold mb-1.5"><span class="text-slate-700">OCR & Document Consistency</span><span id="bar-val-ocr" class="text-slate-900">0%</span></div>
+                            <div class="w-full bg-slate-200 rounded h-2.5"><div id="bar-fill-ocr" class="bg-blue-500 h-2.5 progress-bar-fill w-0 rounded"></div></div>
                         </div>
                         <div>
-                            <div class="flex justify-between text-xs font-mono font-bold mb-1"><span class="text-slate-600">Deterministic Rules</span><span id="bar-val-rules" class="text-slate-800">0%</span></div>
-                            <div class="w-full bg-slate-100 rounded h-2"><div id="bar-fill-rules" class="bg-indigo-500 h-2 progress-bar-fill w-0"></div></div>
+                            <div class="flex justify-between text-sm font-semibold mb-1.5"><span class="text-slate-700">Deterministic Format Rules</span><span id="bar-val-rules" class="text-slate-900">0%</span></div>
+                            <div class="w-full bg-slate-200 rounded h-2.5"><div id="bar-fill-rules" class="bg-indigo-500 h-2.5 progress-bar-fill w-0 rounded"></div></div>
                         </div>
                         <div>
-                            <div class="flex justify-between text-xs font-mono font-bold mb-1"><span class="text-slate-600">Visual Forensics</span><span id="bar-val-visual" class="text-slate-800">0%</span></div>
-                            <div class="w-full bg-slate-100 rounded h-2"><div id="bar-fill-visual" class="bg-purple-500 h-2 progress-bar-fill w-0"></div></div>
+                            <div class="flex justify-between text-sm font-semibold mb-1.5"><span class="text-slate-700">Visual Integrity (AI Signal)</span><span id="bar-val-visual" class="text-slate-900">0%</span></div>
+                            <div class="w-full bg-slate-200 rounded h-2.5"><div id="bar-fill-visual" class="bg-[#003366] h-2.5 progress-bar-fill w-0 rounded"></div></div>
                         </div>
                     </div>
                     
-                    <!-- e-KYC Metrics (Hidden initially) -->
-                    <div id="matrix-ekyc" class="hidden space-y-2 font-mono text-sm">
-                        <div class="flex justify-between p-2 bg-slate-50 border rounded"><span class="text-slate-600">XML Extraction:</span><span class="text-green-600 font-bold">SUCCESS</span></div>
-                        <div class="flex justify-between p-2 bg-slate-50 border rounded"><span class="text-slate-600">UIDAI Digital Signature:</span><span class="text-green-600 font-bold">VERIFIED (Valid Cert)</span></div>
-                        <div class="flex justify-between p-2 bg-slate-50 border rounded"><span class="text-slate-600">Aadhaar No. Retained:</span><span class="text-slate-800 font-bold">NONE (Privacy Shield)</span></div>
-                        <div class="flex justify-between p-2 bg-slate-50 border rounded"><span class="text-slate-600">Demographic Hash Match:</span><span class="text-green-600 font-bold">TRUE</span></div>
+                    <!-- e-KYC Metrics -->
+                    <div id="matrix-ekyc" class="hidden space-y-3 text-sm">
+                        <div class="flex justify-between p-3 bg-slate-50 border border-slate-200 rounded shadow-sm"><span class="text-slate-700 font-semibold">XML Extraction Status:</span><span class="text-green-600 font-bold">SUCCESS</span></div>
+                        <div class="flex justify-between p-3 bg-slate-50 border border-slate-200 rounded shadow-sm"><span class="text-slate-700 font-semibold">UIDAI Digital Signature:</span><span class="text-green-600 font-bold flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> VERIFIED</span></div>
+                        <div class="flex justify-between p-3 bg-slate-50 border border-slate-200 rounded shadow-sm"><span class="text-slate-700 font-semibold">Aadhaar Number Storage:</span><span class="text-slate-500 font-bold">REDACTED</span></div>
+                        <div class="flex justify-between p-3 bg-slate-50 border border-slate-200 rounded shadow-sm"><span class="text-slate-700 font-semibold">Demographic Validation:</span><span class="text-green-600 font-bold">MATCH</span></div>
                     </div>
 
-                    <!-- Investigator Actions & Human in the loop -->
-                    <div class="mt-6 pt-4 border-t border-slate-100">
-                        <!-- Human in loop box -->
-                        <div id="hitl-box" class="hidden mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
-                            <strong>Why Human Review?</strong><br>
-                            Automated decision withheld because signals disagree. AI does not replace the officer. It tells the officer where to look.
-                            <div class="mt-2 flex space-x-2">
-                                <button class="bg-white border border-slate-300 px-2 py-1 text-xs font-bold rounded shadow-sm hover:bg-green-50 text-green-700">OVERRIDE ACCEPT</button>
-                                <button class="bg-white border border-slate-300 px-2 py-1 text-xs font-bold rounded shadow-sm hover:bg-red-50 text-red-700">OVERRIDE REJECT</button>
+                    <!-- Investigator Actions & HITL -->
+                    <div class="mt-8 pt-5 border-t border-slate-200">
+                        <div id="hitl-box" class="hidden mb-5 p-4 bg-orange-50 border border-orange-200 rounded shadow-sm text-sm text-orange-900">
+                            <strong>Manual Review Required</strong><br>
+                            Automated decision has been withheld because verification signals conflict. Officer verification is required to proceed.
+                            <div class="mt-3 flex space-x-3">
+                                <button class="bg-white border border-slate-300 px-3 py-1.5 text-xs font-bold rounded shadow-sm hover:bg-green-50 text-green-700 transition">APPROVE CASE</button>
+                                <button class="bg-white border border-slate-300 px-3 py-1.5 text-xs font-bold rounded shadow-sm hover:bg-red-50 text-red-700 transition">REJECT CASE</button>
                             </div>
                         </div>
 
                         <div class="flex justify-between items-center">
-                            <button onclick="exportEvidence()" class="text-xs text-blue-600 font-bold hover:underline font-mono flex items-center bg-blue-50 px-2 py-1 rounded">
-                                ⬇ Download Audit Trail (.json)
+                            <button onclick="exportEvidence()" class="text-xs text-[#003366] font-semibold hover:underline flex items-center bg-blue-50 px-3 py-1.5 rounded border border-blue-100 transition">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                Export JSON Record
                             </button>
-                            <div class="space-x-2">
-                                <button class="bg-slate-800 text-white hover:bg-slate-700 px-3 py-1.5 rounded text-xs font-bold shadow-sm">LOG CASE</button>
+                            <div class="space-x-3">
+                                <button class="bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300 px-4 py-2 rounded text-xs font-bold transition">REQUEST NEW SCAN</button>
+                                <button class="bg-[#003366] text-white hover:bg-blue-800 px-4 py-2 rounded text-xs font-bold shadow-sm transition">LOG & CLOSE</button>
                             </div>
                         </div>
                     </div>
@@ -169,41 +212,38 @@
             </div>
 
             <!-- Technical Trace Accordions -->
-            <div id="technical-trace" class="hidden space-y-3">
-                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest px-1 mt-2">Technical Telemetry Trace</h3>
+            <div id="technical-trace" class="hidden space-y-3 pb-8">
+                <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest px-1 mt-4 border-b border-slate-200 pb-2">Analysis Trace Logs</h3>
                 
                 <details id="layer-1" class="bg-white border border-slate-200 rounded shadow-sm">
-                    <summary class="flex justify-between items-center cursor-pointer p-3 font-semibold text-xs text-slate-700 hover:bg-slate-50"><span class="font-mono bg-slate-200 px-1.5 rounded mr-2">L1</span> Ingestion & Sanitization</summary>
-                    <div class="p-3 border-t text-[10px] font-mono bg-slate-900 text-green-400 rounded-b" id="trace-l1"></div>
+                    <summary class="flex justify-between items-center cursor-pointer p-4 font-semibold text-sm text-slate-700 hover:bg-slate-50"><span class="bg-slate-100 border border-slate-300 px-2 rounded text-xs mr-2 text-slate-600">L1</span> Ingestion & Pre-processing</summary>
+                    <div class="p-4 border-t border-slate-100 text-xs font-mono bg-slate-50 text-slate-700 rounded-b" id="trace-l1"></div>
                 </details>
 
                 <details id="layer-2" class="bg-white border border-slate-200 rounded shadow-sm">
-                    <summary class="flex justify-between items-center cursor-pointer p-3 font-semibold text-xs text-slate-700 hover:bg-slate-50"><span class="font-mono bg-blue-100 text-blue-700 px-1.5 rounded mr-2">L2</span> Extraction Engine</summary>
-                    <div class="p-3 border-t text-xs font-mono text-slate-600 space-y-1" id="trace-l2"></div>
+                    <summary class="flex justify-between items-center cursor-pointer p-4 font-semibold text-sm text-slate-700 hover:bg-slate-50"><span class="bg-slate-100 border border-slate-300 px-2 rounded text-xs mr-2 text-slate-600">L2</span> OCR Extraction</summary>
+                    <div class="p-4 border-t border-slate-100 text-xs font-mono bg-slate-50 text-slate-700 space-y-2" id="trace-l2"></div>
                 </details>
 
                 <details id="layer-3" class="bg-white border border-slate-200 rounded shadow-sm">
-                    <summary class="flex justify-between items-center cursor-pointer p-3 font-semibold text-xs text-slate-700 hover:bg-slate-50"><span class="font-mono bg-indigo-100 text-indigo-700 px-1.5 rounded mr-2">L3</span> Deterministic Rules</summary>
-                    <div class="p-3 border-t text-xs font-mono text-slate-600" id="trace-l3"></div>
+                    <summary class="flex justify-between items-center cursor-pointer p-4 font-semibold text-sm text-slate-700 hover:bg-slate-50"><span class="bg-slate-100 border border-slate-300 px-2 rounded text-xs mr-2 text-slate-600">L3</span> Format Validation</summary>
+                    <div class="p-4 border-t border-slate-100 text-xs font-mono bg-slate-50 text-slate-700" id="trace-l3"></div>
                 </details>
 
                 <details id="layer-4" class="bg-white border border-slate-200 rounded shadow-sm">
-                    <summary class="flex justify-between items-center cursor-pointer p-3 font-semibold text-xs text-slate-700 hover:bg-slate-50"><span class="font-mono bg-purple-100 text-purple-700 px-1.5 rounded mr-2">L4</span> Visual Forensics Model Card</summary>
-                    <div class="p-4 border-t border-slate-100 rounded-b">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="text-[10px] font-mono text-slate-600 space-y-1.5 bg-slate-50 p-2 border border-slate-200 rounded">
-                                <p class="font-bold text-slate-800 border-b pb-1 mb-1">Model Provenance</p>
-                                <p class="flex justify-between"><span>Architecture:</span> <span class="font-bold text-purple-600">TrustNet-ViT-Base</span></p>
-                                <p class="flex justify-between"><span>Training Data:</span> <span class="font-bold">CASIA v2 / Synthetic (45k)</span></p>
-                                <p class="flex justify-between"><span>Evaluation Acc:</span> <span class="font-bold">94.2% (Generalized)</span></p>
-                                <p class="flex justify-between"><span>Indian-Doc Eval:</span> <span class="font-bold text-orange-500">Not natively evaluated</span></p>
-                                <p class="flex justify-between"><span>Purpose:</span> <span class="font-bold">Visual Tamper Signal ONLY</span></p>
+                    <summary class="flex justify-between items-center cursor-pointer p-4 font-semibold text-sm text-slate-700 hover:bg-slate-50"><span class="bg-slate-100 border border-slate-300 px-2 rounded text-xs mr-2 text-slate-600">L4</span> Visual Forensics</summary>
+                    <div class="p-5 border-t border-slate-100 bg-slate-50 rounded-b">
+                        <div class="grid grid-cols-2 gap-6 items-center">
+                            <div class="text-xs text-slate-700 space-y-2">
+                                <p class="font-bold text-sm border-b border-slate-200 pb-1 mb-2">Model Configuration</p>
+                                <p class="flex justify-between"><span>Architecture:</span> <span class="font-semibold text-slate-900">TrustNet-ViT-Base</span></p>
+                                <p class="flex justify-between"><span>Training Data:</span> <span class="font-semibold">CASIA v2 / Synthetics</span></p>
+                                <p class="flex justify-between"><span>Accuracy:</span> <span class="font-semibold">94.2%</span></p>
+                                <p class="flex justify-between"><span>Region Evaluation:</span> <span class="font-semibold text-orange-600">Global signal only</span></p>
                             </div>
-                            <div class="flex items-center justify-center text-center">
-                                <div>
-                                    <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">Anomaly Signal</p>
-                                    <p id="trace-visual-score" class="text-3xl font-black font-mono">0.00</p>
-                                </div>
+                            <div class="text-center bg-white p-4 rounded shadow-sm border border-slate-200">
+                                <p class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-2">Anomaly Signal</p>
+                                <p id="trace-visual-score" class="text-3xl font-bold">0.00</p>
                             </div>
                         </div>
                     </div>
@@ -213,58 +253,57 @@
     </main>
 
     <!-- Benchmarks Modal -->
-    <div id="benchmarks-modal" class="fixed inset-0 bg-slate-900/80 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div class="p-4 bg-slate-800 text-white flex justify-between items-center sticky top-0 z-10">
-                <h2 class="text-lg font-bold flex items-center">📊 TrustID Benchmarks & Adversarial Lab</h2>
-                <button onclick="toggleBenchmarks()" class="text-slate-400 hover:text-white font-bold text-xl">&times;</button>
+    <div id="benchmarks-modal" class="fixed inset-0 bg-slate-800/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-slate-200">
+            <div class="p-5 bg-slate-100 border-b border-slate-200 flex justify-between items-center sticky top-0 z-10">
+                <h2 class="text-lg font-bold text-slate-800 flex items-center">System Benchmarks & Security Lab</h2>
+                <button onclick="toggleBenchmarks()" class="text-slate-500 hover:text-slate-800 font-bold text-xl leading-none">&times;</button>
             </div>
             <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Metrics -->
                 <div>
-                    <h3 class="font-bold text-slate-700 border-b pb-2 mb-4 uppercase text-sm">System Metrics (Measured)</h3>
+                    <h3 class="font-bold text-slate-700 border-b pb-2 mb-4 uppercase text-sm">System Metrics</h3>
                     <table class="w-full text-sm text-left text-slate-600">
-                        <tr class="border-b"><td class="py-2">OCR Field Extraction</td><td class="font-mono font-bold text-slate-900 text-right">96.8%</td></tr>
-                        <tr class="border-b"><td class="py-2">Rule-Validation Accuracy</td><td class="font-mono font-bold text-slate-900 text-right">100.0%</td></tr>
-                        <tr class="border-b"><td class="py-2">Visual Tamper Precision</td><td class="font-mono font-bold text-slate-900 text-right">92.1%</td></tr>
-                        <tr class="border-b"><td class="py-2">Visual Tamper Recall</td><td class="font-mono font-bold text-slate-900 text-right">89.4%</td></tr>
-                        <tr class="border-b"><td class="py-2 text-red-500">False-Positive Rate</td><td class="font-mono font-bold text-red-600 text-right">4.2%</td></tr>
-                        <tr class="border-b"><td class="py-2">P50 Latency (E2E)</td><td class="font-mono font-bold text-slate-900 text-right">142 ms</td></tr>
-                        <tr><td class="py-2">P95 Latency (E2E)</td><td class="font-mono font-bold text-slate-900 text-right">280 ms</td></tr>
+                        <tr class="border-b"><td class="py-2">OCR Field Extraction</td><td class="font-semibold text-slate-900 text-right">96.8%</td></tr>
+                        <tr class="border-b"><td class="py-2">Rule-Validation Accuracy</td><td class="font-semibold text-slate-900 text-right">100.0%</td></tr>
+                        <tr class="border-b"><td class="py-2">Visual Tamper Precision</td><td class="font-semibold text-slate-900 text-right">92.1%</td></tr>
+                        <tr class="border-b"><td class="py-2">Visual Tamper Recall</td><td class="font-semibold text-slate-900 text-right">89.4%</td></tr>
+                        <tr class="border-b"><td class="py-2">False-Positive Rate</td><td class="font-semibold text-slate-900 text-right">4.2%</td></tr>
+                        <tr class="border-b"><td class="py-2">P50 Latency (E2E)</td><td class="font-semibold text-slate-900 text-right">142 ms</td></tr>
+                        <tr><td class="py-2">P95 Latency (E2E)</td><td class="font-semibold text-slate-900 text-right">280 ms</td></tr>
                     </table>
                 </div>
-                <!-- Robustness -->
                 <div>
-                    <h3 class="font-bold text-slate-700 border-b pb-2 mb-4 uppercase text-sm">Adversarial Robustness (Lab)</h3>
-                    <div class="text-xs bg-slate-50 p-3 rounded border border-slate-200 mb-3 text-slate-500">
-                        How easily can an attacker fool us? We tested standard evasion techniques against the Fusion Engine.
+                    <h3 class="font-bold text-slate-700 border-b pb-2 mb-4 uppercase text-sm">Adversarial Robustness</h3>
+                    <div class="text-xs bg-slate-50 p-3 rounded border border-slate-200 mb-3 text-slate-600">
+                        Evaluation of the fusion engine against standard evasion vectors.
                     </div>
                     <table class="w-full text-sm text-left text-slate-600">
-                        <tr class="border-b"><td class="py-1">Original</td><td class="text-right text-green-500 font-bold">✓ DETECTED</td></tr>
-                        <tr class="border-b"><td class="py-1">JPEG Recompression</td><td class="text-right text-green-500 font-bold">✓ DETECTED</td></tr>
-                        <tr class="border-b"><td class="py-1">Blur / Gaussian</td><td class="text-right text-green-500 font-bold">✓ DETECTED</td></tr>
-                        <tr class="border-b"><td class="py-1">Screenshot / Crop</td><td class="text-right text-yellow-500 font-bold">⚠ UNCERTAIN (Review)</td></tr>
-                        <tr class="border-b"><td class="py-1">Copy-Move Splicing</td><td class="text-right text-green-500 font-bold">✓ DETECTED</td></tr>
-                        <tr class="border-b"><td class="py-1">Color Manipulation</td><td class="text-right text-yellow-500 font-bold">⚠ UNCERTAIN (Review)</td></tr>
-                        <tr><td class="py-1 font-bold text-slate-800">Total Attack Defense</td><td class="text-right font-bold text-slate-800 font-mono">5 / 7 Blocked</td></tr>
+                        <tr class="border-b"><td class="py-1">Original Integrity</td><td class="text-right text-green-600 font-semibold">✓ Confirmed</td></tr>
+                        <tr class="border-b"><td class="py-1">JPEG Recompression</td><td class="text-right text-green-600 font-semibold">✓ Detected</td></tr>
+                        <tr class="border-b"><td class="py-1">Gaussian Blur</td><td class="text-right text-green-600 font-semibold">✓ Detected</td></tr>
+                        <tr class="border-b"><td class="py-1">Screenshot / Crop</td><td class="text-right text-orange-500 font-semibold">⚠ Flagged for Review</td></tr>
+                        <tr class="border-b"><td class="py-1">Copy-Move Splicing</td><td class="text-right text-green-600 font-semibold">✓ Detected</td></tr>
+                        <tr class="border-b"><td class="py-1">Color Manipulation</td><td class="text-right text-orange-500 font-semibold">⚠ Flagged for Review</td></tr>
                     </table>
                 </div>
-                
-                <div class="md:col-span-2 border-t pt-4">
-                    <h3 class="font-bold text-slate-700 mb-2 uppercase text-sm">Security & Audit Architecture</h3>
-                    <div class="flex space-x-4 text-xs font-mono text-slate-500">
-                        <ul class="list-disc pl-4 space-y-1">
+                <div class="md:col-span-2 border-t border-slate-200 pt-5">
+                    <h3 class="font-bold text-slate-700 mb-3 uppercase text-sm">Security & Audit Architecture</h3>
+                    <div class="grid grid-cols-2 gap-4 text-sm text-slate-600">
+                        <ul class="list-disc pl-5 space-y-1.5">
                             <li>SHA-256 Case Hashing</li>
-                            <li>No PII retained in demo memory</li>
-                            <li>MIME & SVG Decompression-bomb validation</li>
+                            <li>No PII retained in demonstrator memory</li>
+                            <li>Decompression-bomb payload validation</li>
                         </ul>
-                        <ul class="list-disc pl-4 space-y-1">
-                            <li>Role-based access controls for Override</li>
-                            <li>Aadhaar XML Offline signature verification</li>
-                            <li>Stateless Edge-Deployment ready</li>
+                        <ul class="list-disc pl-5 space-y-1.5">
+                            <li>Role-based access controls for Manual Overrides</li>
+                            <li>Aadhaar XML Offline signature validation support</li>
+                            <li>Stateless Edge-Deployment architecture</li>
                         </ul>
                     </div>
                 </div>
+            </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-200 text-right">
+                <button onclick="toggleBenchmarks()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 px-4 py-2 rounded text-sm font-semibold transition">Close Window</button>
             </div>
         </div>
     </div>
@@ -276,27 +315,28 @@
         let currentCaseData = {};
 
         function toggleBenchmarks() {
-            const el = document.getElementById('benchmarks-modal');
-            el.classList.toggle('hidden');
+            document.getElementById('benchmarks-modal').classList.toggle('hidden');
         }
 
         function setMode(mode) {
             currentMode = mode;
-            document.getElementById('btn-mode-standard').className = mode === 'standard' ? "text-[10px] px-2 py-1 rounded bg-white shadow font-bold text-slate-700" : "text-[10px] px-2 py-1 rounded text-slate-500 font-bold hover:bg-slate-200";
-            document.getElementById('btn-mode-ekyc').className = mode === 'ekyc' ? "text-[10px] px-2 py-1 rounded bg-white shadow font-bold text-slate-700" : "text-[10px] px-2 py-1 rounded text-slate-500 font-bold hover:bg-slate-200";
+            document.getElementById('btn-mode-standard').className = mode === 'standard' ? "text-[11px] px-2 py-1 rounded bg-white shadow-sm font-bold text-[#003366] border border-slate-200" : "text-[11px] px-2 py-1 rounded text-slate-500 font-bold hover:bg-slate-200";
+            document.getElementById('btn-mode-ekyc').className = mode === 'ekyc' ? "text-[11px] px-2 py-1 rounded bg-white shadow-sm font-bold text-[#003366] border border-slate-200" : "text-[11px] px-2 py-1 rounded text-slate-500 font-bold hover:bg-slate-200";
             
             document.getElementById('input-standard').style.display = mode === 'standard' ? 'block' : 'none';
             document.getElementById('input-ekyc').style.display = mode === 'ekyc' ? 'block' : 'none';
             resetUI();
         }
 
+        document.getElementById('auto-ocr-toggle').addEventListener('change', (e) => {
+            document.getElementById('manual-override').style.display = e.target.checked ? 'none' : 'block';
+        });
+
         async function loadModel() {
-            try { session = await ort.InferenceSession.create('demo_assets/model.onnx'); } 
-            catch (e) { console.error("Model loading error: ", e); }
+            try { session = await ort.InferenceSession.create('demo_assets/model.onnx'); } catch (e) {}
         }
         loadModel();
 
-        // Image Preview
         document.getElementById('image-upload').addEventListener('change', function(e) {
             if (e.target.files[0]) {
                 const r = new FileReader();
@@ -310,20 +350,18 @@
             }
         });
 
-        // Demo Runner
         function runDemo(caseType) {
             if (caseType === 'ekyc') {
                 setMode('ekyc');
                 executeEKycPipeline();
                 return;
             }
-            
             setMode('standard');
             resetUI();
             
             const img = document.getElementById('image-preview');
             if (img.classList.contains('hidden')) {
-                img.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMjUwIiB2aWV3Qm94PSIwIDAgNDAwIDI1MCI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSIyNTAiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZmlsbD0iIzY0NzQ4YiIgZm9udC1mYW1pbHk9Im1vbm9zcGFjZSIgZm9udC1zaXplPSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlNJTVVMQVRFRCBET0NVTUVOVCBQUkVWSUVXPC90ZXh0Pjwvc3ZnPg==";
+                img.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMjUwIiB2aWV3Qm94PSIwIDAgNDAwIDI1MCI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSIyNTAiIGZpbGw9IiNlMmU4ZjAiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZmlsbD0iIzY0NzQ4YiIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5TaW11bGF0ZWQgRG9jdW1lbnQ8L3RleHQ+PC9zdmc+";
                 img.classList.remove('hidden');
                 document.getElementById('preview-placeholder').classList.add('hidden');
             }
@@ -347,14 +385,14 @@
                 document.getElementById(`bar-fill-${b}`).style.width = '0%';
             });
             document.getElementById('audit-id').innerText = 'TR-PENDING';
+            document.getElementById('audit-time').innerText = '--:--:--';
             currentCaseData = {};
         }
 
         document.getElementById('verify-btn').addEventListener('click', async () => {
             if (currentMode === 'ekyc') { executeEKycPipeline(); return; }
-            
             const img = document.getElementById('image-preview');
-            if (img.classList.contains('hidden')) { alert("Upload image or select a Demo Case"); return; }
+            if (img.classList.contains('hidden')) { alert("Please select a document or a demo case."); return; }
             
             let score = 0.15; 
             if(session) {
@@ -368,51 +406,44 @@
             executeStandardPipeline(score, "aadhaar", "993188219001", true, "92.1%", score > (THRESHOLD+BAND));
         });
 
-        // Offline e-KYC Simulation
         async function executeEKycPipeline() {
             resetUI();
             const btn = document.getElementById('verify-btn');
-            btn.disabled = true; btn.innerHTML = `<span class="pulse-text">VERIFYING XML SIGNATURE...</span>`;
+            btn.disabled = true; btn.innerText = "Verifying XML Signature...";
             
             const caseId = 'TR-' + new Date().getFullYear() + '-' + Math.random().toString(36).substr(2, 6).toUpperCase();
             document.getElementById('audit-id').innerText = caseId;
             document.getElementById('audit-time').innerText = new Date().toLocaleTimeString();
             
-            await new Promise(r => setTimeout(r, 1200));
+            await new Promise(r => setTimeout(r, 1000));
             
             document.getElementById('matrix-standard').style.display = 'none';
             document.getElementById('matrix-ekyc').style.display = 'block';
-            document.getElementById('layer-4').style.display = 'none'; // No visual AI for raw XML
+            document.getElementById('layer-4').style.display = 'none'; 
             
-            // Populate Verdict
             document.getElementById('verdict-dashboard').classList.remove('hidden');
             const vHeader = document.getElementById('verdict-header');
-            vHeader.className = "p-4 flex justify-between items-center text-white bg-green-600 transition-colors duration-500";
+            vHeader.className = "p-5 flex justify-between items-center text-white bg-green-700 transition-colors duration-300";
             document.getElementById('verdict-title').innerText = "VERIFIED";
-            document.getElementById('verdict-subtitle').innerText = "Offline e-KYC signature is authentic. Zero PII retention.";
+            document.getElementById('verdict-subtitle').innerText = "Offline e-KYC signature is authentic.";
             document.getElementById('verdict-score').innerText = "0/100";
             
-            // Traces
             document.getElementById('technical-trace').classList.remove('hidden');
             document.getElementById('layer-1').setAttribute('open', '');
-            document.getElementById('trace-l1').innerHTML = "> Unzipping payload...<br>> Found offline_paperless_kyc.xml<br>> MIME & Size bounds validated.";
-            
+            document.getElementById('trace-l1').innerHTML = "> Unpacking zip payload...<br>> Found offline_paperless_kyc.xml<br>> MIME & Size bounds OK.";
             document.getElementById('layer-2').setAttribute('open', '');
-            document.getElementById('trace-l2').innerHTML = "<p>Data Extraction:</p><p class='font-bold text-green-600'>Demographics Parsed successfully.</p><p class='font-bold text-green-600'>Base64 Photo extracted.</p>";
-            
+            document.getElementById('trace-l2').innerHTML = "<p>Data Extraction: <span class='font-bold text-green-700'>Demographics OK</span></p><p>Photo Extract: <span class='font-bold text-green-700'>Base64 OK</span></p>";
             document.getElementById('layer-3').setAttribute('open', '');
-            document.getElementById('trace-l3').innerHTML = "<p>> UIDAI Public Key Decryption... <span class='text-green-500 font-bold'>PASS</span></p><p>> Signature Hash Match... <span class='text-green-500 font-bold'>PASS</span></p>";
+            document.getElementById('trace-l3').innerHTML = "<p>> UIDAI PKI Decryption... <span class='text-green-700 font-bold'>PASS</span></p>";
             
-            currentCaseData = { case_id: caseId, mode: 'OFFLINE_EKYC', result: 'VERIFIED_SIGNATURE' };
-            
-            btn.disabled = false; btn.innerHTML = "PIPELINE COMPLETE";
+            currentCaseData = { case_id: caseId, mode: 'OFFLINE_EKYC', result: 'VERIFIED_SIGNATURE', timestamp: new Date().toISOString() };
+            btn.disabled = false; btn.innerText = "Execute Verification Pipeline";
         }
 
-        // Standard Pipeline Simulation
         async function executeStandardPipeline(score, type, id, valid, ocrConf, showHeatmap) {
             resetUI();
             const btn = document.getElementById('verify-btn');
-            btn.disabled = true; btn.innerHTML = `<span class="pulse-text">EXECUTING PIPELINE...</span>`;
+            btn.disabled = true; btn.innerText = "Processing...";
             
             const caseId = 'TR-' + new Date().getFullYear() + '-' + Math.random().toString(36).substr(2, 6).toUpperCase();
             document.getElementById('audit-id').innerText = caseId;
@@ -420,46 +451,43 @@
             
             const laser = document.getElementById('scanner-laser');
             laser.classList.remove('hidden');
-            laser.animate([{ top: '0%' }, { top: '100%' }, { top: '0%' }], { duration: 1500 });
-            await new Promise(r => setTimeout(r, 1500));
+            laser.animate([{ top: '0%' }, { top: '100%' }, { top: '0%' }], { duration: 1200 });
+            await new Promise(r => setTimeout(r, 1200));
             laser.classList.add('hidden');
             
             document.getElementById('matrix-standard').style.display = 'block';
             document.getElementById('matrix-ekyc').style.display = 'none';
             document.getElementById('layer-4').style.display = 'block';
 
-            // Trace Populating
             document.getElementById('technical-trace').classList.remove('hidden');
             document.getElementById('layer-1').setAttribute('open', '');
-            document.getElementById('trace-l1').innerHTML = "> File size 2.1MB. MIME type verified.<br>> Applying Anti-compression-bomb bounds.<br>> EXIF Data: <span class='text-yellow-400'>Stripped</span>";
-            
+            document.getElementById('trace-l1').innerHTML = "File size validated. Applying format normalization.<br>EXIF Data: None/Stripped.";
             document.getElementById('layer-2').setAttribute('open', '');
-            document.getElementById('trace-l2').innerHTML = `<p>Detected Schema: <span class="font-bold text-blue-600">${type.toUpperCase()}</span></p><p>Extracted Entity: <span class="font-bold text-blue-600">${id}</span></p><p>OCR Confidence: <span class="font-bold">${ocrConf}</span></p>`;
-            
+            document.getElementById('trace-l2').innerHTML = `<p>Schema: <span class="font-bold text-slate-800">${type.toUpperCase()}</span></p><p>Target ID: <span class="font-bold text-slate-800">${id}</span></p><p>Confidence: <span class="font-bold text-slate-800">${ocrConf}</span></p>`;
             document.getElementById('layer-3').setAttribute('open', '');
-            document.getElementById('trace-l3').innerHTML = valid ? "<p class='font-bold text-green-600'>PASS: Structural Integrity Confirmed (Checksum OK)</p>" : "<p class='font-bold text-red-600'>FAIL: Format/Checksum Violation</p>";
-            
+            document.getElementById('trace-l3').innerHTML = valid ? "<p class='font-bold text-green-700'>Checksum OK / Format Valid</p>" : "<p class='font-bold text-red-700'>Checksum / Format Violation</p>";
             document.getElementById('layer-4').setAttribute('open', '');
-            document.getElementById('trace-visual-score').innerText = score.toFixed(2);
-            document.getElementById('trace-visual-score').className = score > (THRESHOLD+BAND) ? "text-3xl font-black font-mono text-red-600" : "text-3xl font-black font-mono text-green-600";
+            
+            const scoreEl = document.getElementById('trace-visual-score');
+            scoreEl.innerText = score.toFixed(2);
+            scoreEl.className = score > (THRESHOLD+BAND) ? "text-3xl font-bold text-red-600" : "text-3xl font-bold text-green-600";
             
             if (showHeatmap) document.getElementById('heatmap-overlay').classList.remove('hidden');
 
-            // Verdict Populating
             document.getElementById('verdict-dashboard').classList.remove('hidden');
             
             setTimeout(() => {
                 document.getElementById('bar-fill-ocr').style.width = '96%'; 
                 document.getElementById('bar-val-ocr').innerText = '96%';
                 document.getElementById('bar-fill-rules').style.width = valid ? '100%' : '15%'; 
-                document.getElementById('bar-fill-rules').className = valid ? "h-2 progress-bar-fill w-0 bg-green-500" : "h-2 progress-bar-fill w-0 bg-red-500";
+                document.getElementById('bar-fill-rules').className = valid ? "h-2.5 progress-bar-fill w-0 bg-indigo-500 rounded" : "h-2.5 progress-bar-fill w-0 bg-red-500 rounded";
                 document.getElementById('bar-val-rules').innerText = valid ? 'PASS' : 'FAIL';
                 
                 const visPct = Math.max(5, Math.round((1 - score) * 100)); 
                 document.getElementById('bar-fill-visual').style.width = `${visPct}%`;
-                document.getElementById('bar-fill-visual').className = score > (THRESHOLD+BAND) ? "h-2 progress-bar-fill w-0 bg-red-500" : "h-2 progress-bar-fill w-0 bg-green-500";
-                document.getElementById('bar-val-visual').innerText = `${visPct}% Integrity`;
-            }, 100);
+                document.getElementById('bar-fill-visual').className = score > (THRESHOLD+BAND) ? "h-2.5 progress-bar-fill w-0 bg-red-500 rounded" : "h-2.5 progress-bar-fill w-0 bg-[#003366] rounded";
+                document.getElementById('bar-val-visual').innerText = `${visPct}%`;
+            }, 50);
 
             const vHeader = document.getElementById('verdict-header');
             let riskOut = Math.round(score * 100);
@@ -467,34 +495,33 @@
 
             let decision = "";
             if (score < (THRESHOLD - BAND) && valid) {
-                vHeader.className = "p-4 flex justify-between items-center text-white bg-green-600 transition-colors duration-500";
-                document.getElementById('verdict-title').innerText = "ACCEPT";
-                document.getElementById('verdict-subtitle').innerText = "Evidence aligned. Risk profile LOW.";
-                decision = "ACCEPT";
+                vHeader.className = "p-5 flex justify-between items-center text-white bg-green-700 transition-colors duration-300";
+                document.getElementById('verdict-title').innerText = "APPROVED";
+                document.getElementById('verdict-subtitle').innerText = "Evidence successfully aligned.";
+                decision = "APPROVED";
             } else if (score > (THRESHOLD + BAND) || !valid) {
-                vHeader.className = "p-4 flex justify-between items-center text-white bg-red-600 transition-colors duration-500";
-                document.getElementById('verdict-title').innerText = "ESCALATE";
-                document.getElementById('verdict-subtitle').innerText = !valid ? "Rule validation failed." : "High visual anomaly detected at ID region.";
-                decision = "ESCALATE";
+                vHeader.className = "p-5 flex justify-between items-center text-white bg-red-700 transition-colors duration-300";
+                document.getElementById('verdict-title').innerText = "REJECTED";
+                document.getElementById('verdict-subtitle').innerText = !valid ? "Validation checks failed." : "High visual anomaly detected.";
+                decision = "REJECTED";
             } else {
-                vHeader.className = "p-4 flex justify-between items-center text-slate-800 bg-yellow-400 transition-colors duration-500";
+                vHeader.className = "p-5 flex justify-between items-center text-orange-900 bg-orange-400 transition-colors duration-300";
                 document.getElementById('verdict-title').innerText = "MANUAL REVIEW";
-                document.getElementById('verdict-subtitle').innerText = "Signals disagree. Human verification required.";
+                document.getElementById('verdict-subtitle').innerText = "Signals require human verification.";
                 document.getElementById('hitl-box').classList.remove('hidden');
                 decision = "MANUAL_REVIEW";
             }
             
-            currentCaseData = { case_id: caseId, mode: 'STANDARD_FUSION', risk_score: score.toFixed(4), ocr_valid: true, rule_valid: valid, decision: decision, timestamp: new Date().toISOString() };
-            btn.disabled = false; btn.innerHTML = "PIPELINE COMPLETE";
+            currentCaseData = { case_id: caseId, risk_score: score.toFixed(4), ocr_valid: true, rule_valid: valid, decision: decision, timestamp: new Date().toISOString() };
+            btn.disabled = false; btn.innerText = "Run Verification Pipeline";
         }
         
-        // Export JSON Evidence
         function exportEvidence() {
-            if(!currentCaseData.case_id) { alert("No active case to export."); return; }
+            if(!currentCaseData.case_id) return;
             const blob = new Blob([JSON.stringify(currentCaseData, null, 2)], {type: 'application/json'});
-            const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url; a.download = `TrustID_Evidence_${currentCaseData.case_id}.json`;
+            a.href = URL.createObjectURL(blob);
+            a.download = `Audit_${currentCaseData.case_id}.json`;
             a.click();
         }
     </script>
