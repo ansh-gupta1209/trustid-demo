@@ -4,7 +4,7 @@ import math
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from PIL import Image, ImageEnhance, ImageFilter
+from PIL import Image, ImageEnhance
 import io
 import numpy as np
 import pytesseract
@@ -14,6 +14,7 @@ from mrz.checker.td1 import TD1CodeChecker
 
 app = FastAPI(title="TrustID API")
 
+# Configure CORS - Explicit preflight and header allowance
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -54,61 +55,18 @@ def clean_ocr_text(raw_text: str) -> str:
         res += char_map.get(char, char)
     return res
 
-def preprocess_image_for_ocr(pil_img: Image.Image) -> list[Image.Image]:
-    images = []
-    gray = pil_img.convert('L')
-    sharp = ImageEnhance.Sharpness(gray).enhance(2.0)
-    images.append(sharp)
-    
-    contrast = ImageEnhance.Contrast(gray).enhance(3.0)
-    fn = lambda x : 255 if x > 140 else 0
-    thresh = contrast.point(fn, mode='1')
-    images.append(thresh)
-    
-    w, h = pil_img.size
-    rescaled = gray.resize((w * 2, h * 2), Image.Resampling.LANCZOS)
-    images.append(rescaled)
-    return images
-
-def extract_text_from_image(image_bytes: bytes) -> str:
-    combined_text = ""
-    try:
-        base_image = Image.open(io.BytesIO(image_bytes))
-        variants = [base_image] + preprocess_image_for_ocr(base_image)
-        configs = ['--oem 3 --psm 6', '--oem 3 --psm 11', '--oem 3 --psm 3']
-        for img in variants:
-            for cfg in configs:
-                try:
-                    text = pytesseract.image_to_string(img, config=cfg)
-                    combined_text += "\n" + text
-                except Exception:
-                    pass
-    except Exception:
-        pass
-    return combined_text
-
 def find_id_in_text(text: str, doc_type: str) -> str:
     cleaned = clean_ocr_text(text)
     if doc_type == "aadhaar":
-        matches = re.findall(r'\b\d{4}[-\s]?\d{4}[-\s]?\d{4}\b', cleaned)
+        matches = re.findall(r'\d{4}[-\s]?\d{4}[-\s]?\d{4}', cleaned)
         for match in matches:
             cand = re.sub(r'\D', '', match)
-            if len(cand) == 12 and validate_verhoeff(cand):
+            if len(cand) == 12:
                 return cand
-        
-        all_digits = re.sub(r'\D', '', cleaned)
-        for i in range(len(all_digits) - 11):
-            cand = all_digits[i:i+12]
-            if validate_verhoeff(cand):
-                return cand
-        if len(matches) > 0:
-            return re.sub(r'\D', '', matches[0])
-
     elif doc_type == "pan":
-        matches = re.findall(r'\b[A-Z]{5}[0-9]{4}[A-Z]{1}\b', text.upper())
+        matches = re.findall(r'[A-Z]{5}[0-9]{4}[A-Z]{1}', text.upper())
         if matches:
             return matches[0]
-            
     return ""
 
 def validate_pan(pan_str: str) -> bool:
@@ -153,6 +111,23 @@ def process_image(image_bytes: bytes) -> float:
         return round(score, 4)
     except Exception:
         return 0.5
+
+def extract_text_from_image(image_bytes: bytes) -> str:
+    try:
+        image = Image.open(io.BytesIO(image_bytes)).convert('L')
+        enhancer = ImageEnhance.Contrast(image)
+        image = enhancer.enhance(2.0)
+        
+        img_array = np.array(image)
+        img_array = (img_array > 128) * 255
+        image = Image.fromarray(np.uint8(img_array))
+        
+        custom_config = r'--oem 3 --psm 6'
+        text = pytesseract.image_to_string(image, config=custom_config)
+        return text
+    except Exception as e:
+        print(f"OCR Error: {e}")
+        return ""
 
 @app.get("/")
 async def root():
