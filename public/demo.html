@@ -119,7 +119,7 @@
     <script>
         // 2. COLD START FIX (Ping backend every 10 mins & on load)
         function pingBackend() {
-            fetch('/health').then(() => {
+            fetch('https://trustid-backend-c695.onrender.com/health').then(() => {
                 document.getElementById('backend-status').innerText = 'Backend Ready';
                 document.getElementById('backend-status').classList.remove('animate-pulse', 'bg-blue-800');
                 document.getElementById('backend-status').classList.add('text-green-300');
@@ -175,7 +175,7 @@
             formData.append("document_type", document.getElementById('doc-type').value);
 
             try {
-                const response = await fetch('/api/v1/verify', { method: 'POST', body: formData });
+                const response = await fetch('https://trustid-backend-c695.onrender.com/api/v1/verify', { method: 'POST', body: formData });
                 const data = await response.json();
                 
                 if (data.status === 'success') {
