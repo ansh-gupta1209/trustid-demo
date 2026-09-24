@@ -393,19 +393,54 @@
 
         document.getElementById('verify-btn').addEventListener('click', async () => {
             if (currentMode === 'ekyc') { executeEKycPipeline(); return; }
-            const img = document.getElementById('image-preview');
-            if (img.classList.contains('hidden')) { alert("Please select a document or a demo case."); return; }
             
-            let score = 0.15; 
-            if(session) {
-                try {
-                    const tensor = new ort.Tensor('float32', new Float32Array(1*3*384*384).fill(0.5), [1,3,384,384]);
-                    const res = await session.run({ input: tensor });
-                    score = res[session.outputNames[0]].data[0] || Math.random();
-                    if(score < 0 || score > 1) score = 1/(1+Math.exp(-score));
-                } catch(e) {}
+            const fileInput = document.getElementById('image-upload');
+            if (!fileInput.files[0]) {
+                const img = document.getElementById('image-preview');
+                if (img.classList.contains('hidden')) { alert("Please select a document or a demo case."); return; }
+                executeStandardPipeline(0.12, "aadhaar", "993188219001", true, "92.1%", false);
+                return;
             }
-            executeStandardPipeline(score, "aadhaar", "993188219001", true, "92.1%", score > (THRESHOLD+BAND));
+            
+            const btn = document.getElementById('verify-btn');
+            btn.disabled = true; btn.innerText = "Processing via Backend...";
+            
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+            
+            let docType = document.getElementById('doc-type') ? document.getElementById('doc-type').value : "aadhaar";
+            formData.append("document_type", docType);
+            
+            let docId = document.getElementById('doc-id') ? document.getElementById('doc-id').value : "";
+            if (docId) {
+                formData.append("document_id", docId);
+            }
+
+            try {
+                const response = await fetch('/api/v1/verify', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    executeStandardPipeline(
+                        data.visual_tamper_score, 
+                        docType, 
+                        data.extracted_id || "NOT_FOUND", 
+                        data.validation_passed, 
+                        "Real OCR Match", 
+                        data.visual_tamper_score > (THRESHOLD+BAND)
+                    );
+                } else {
+                    alert("Backend Error: " + data.error);
+                    btn.disabled = false; btn.innerText = "Run Verification Pipeline";
+                }
+            } catch (error) {
+                alert("Network error. Details: " + error.message);
+                btn.disabled = false; btn.innerText = "Run Verification Pipeline";
+            }
         });
 
         async function executeEKycPipeline() {
