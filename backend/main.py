@@ -14,43 +14,66 @@ from mrz.checker.td1 import TD1CodeChecker
 
 app = FastAPI(title="TrustID API")
 
-# Configure CORS
+# Configure CORS - Explicit preflight and header allowance
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=False,  # Must be False when allow_origins=["*"]
-    allow_methods=["*"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS", "PUT", "DELETE"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
+VERHOEFF_D = [
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [1, 2, 3, 4, 0, 6, 7, 8, 9, 5],
+    [2, 3, 4, 0, 1, 7, 8, 9, 5, 6], [3, 4, 0, 1, 2, 8, 9, 5, 6, 7],
+    [4, 0, 1, 2, 3, 9, 5, 6, 7, 8], [5, 9, 8, 7, 6, 0, 4, 3, 2, 1],
+    [6, 5, 9, 8, 7, 1, 0, 4, 3, 2], [7, 6, 5, 9, 8, 2, 1, 0, 4, 3],
+    [8, 7, 6, 5, 9, 3, 2, 1, 0, 4], [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+]
+
+VERHOEFF_P = [
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [1, 5, 7, 6, 2, 8, 3, 0, 9, 4],
+    [5, 8, 0, 3, 7, 9, 6, 1, 4, 2], [8, 9, 1, 6, 0, 4, 3, 5, 2, 7],
+    [9, 4, 5, 3, 1, 2, 6, 8, 7, 0], [4, 2, 8, 6, 5, 7, 3, 9, 0, 1],
+    [2, 7, 9, 3, 8, 0, 6, 4, 1, 5], [7, 0, 4, 6, 9, 1, 3, 2, 5, 8]
+]
+
 def validate_verhoeff(num_str: str) -> bool:
-    if len(num_str) != 12 or not num_str.isdigit():
+    clean_str = re.sub(r'\D', '', str(num_str))
+    if len(clean_str) != 12:
         return False
-    d = [
-        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [1, 2, 3, 4, 0, 6, 7, 8, 9, 5],
-        [2, 3, 4, 0, 1, 7, 8, 9, 5, 6], [3, 4, 0, 1, 2, 8, 9, 5, 6, 7],
-        [4, 0, 1, 2, 3, 9, 5, 6, 7, 8], [5, 9, 8, 7, 6, 0, 4, 3, 2, 1],
-        [6, 5, 9, 8, 7, 1, 0, 4, 3, 2], [7, 6, 5, 9, 8, 2, 1, 0, 4, 3],
-        [8, 7, 6, 5, 9, 3, 2, 1, 0, 4], [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
-    ]
-    p = [
-        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [1, 5, 7, 6, 2, 8, 3, 0, 9, 4],
-        [5, 8, 0, 3, 7, 9, 6, 1, 4, 2], [8, 9, 1, 6, 0, 4, 3, 5, 2, 7],
-        [9, 4, 5, 3, 1, 2, 6, 8, 7, 0], [4, 2, 8, 6, 5, 7, 3, 9, 0, 1],
-        [2, 7, 9, 3, 8, 0, 6, 4, 1, 5], [7, 0, 4, 6, 9, 1, 3, 2, 5, 8]
-    ]
-    inv = [0, 4, 3, 2, 1, 5, 6, 7, 8, 9]
     c = 0
-    for i, n in enumerate(reversed(num_str)):
-        c = d[c][p[i % 8][int(n)]]
+    for i, n in enumerate(reversed(clean_str)):
+        c = VERHOEFF_D[c][VERHOEFF_P[i % 8][int(n)]]
     return c == 0
+
+def clean_ocr_text(raw_text: str) -> str:
+    char_map = {'O': '0', 'o': '0', 'D': '0', 'I': '1', 'l': '1', '|': '1', 'B': '8', 'S': '5', 'Z': '2'}
+    res = ""
+    for char in raw_text:
+        res += char_map.get(char, char)
+    return res
+
+def find_id_in_text(text: str, doc_type: str) -> str:
+    cleaned = clean_ocr_text(text)
+    if doc_type == "aadhaar":
+        matches = re.findall(r'\b\d{4}[-\s]?\d{4}[-\s]?\d{4}\b', cleaned)
+        for match in matches:
+            cand = re.sub(r'\D', '', match)
+            if len(cand) == 12:
+                return cand
+    elif doc_type == "pan":
+        matches = re.findall(r'\b[A-Z]{5}[0-9]{4}[A-Z]{1}\b', text.upper())
+        if matches:
+            return matches[0]
+    return ""
 
 def validate_pan(pan_str: str) -> bool:
     pattern = r'^[A-Z]{5}[0-9]{4}[A-Z]{1}$'
     return bool(re.match(pattern, pan_str.upper()))
 
 def validate_mrz(mrz_str: str) -> bool:
-    # Very basic MRZ validation fallback or attempt to use mrz library
     try:
         if len(mrz_str) >= 88:
             return bool(TD3CodeChecker(mrz_str))
@@ -60,25 +83,16 @@ def validate_mrz(mrz_str: str) -> bool:
             return bool(TD1CodeChecker(mrz_str))
         return False
     except Exception:
-        # Fallback if parsing fails
         return len(mrz_str) > 10
 
 def process_image(image_bytes: bytes) -> float:
-    """
-    Compute a visual tamper score (0.0 = authentic, 1.0 = tampered) using
-    lightweight PIL/numpy image statistics — no ONNX required.
-    Heuristics used: noise variance, edge sharpness, and compression artifacts.
-    """
     try:
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
         image = image.resize((384, 384))
         img_array = np.array(image).astype(np.float32)
-
-        # 1. Noise variance (tampered regions often have inconsistent noise)
         gray = np.mean(img_array, axis=2)
-        noise = np.std(gray) / 255.0  # normalised 0-1
+        noise = np.std(gray) / 255.0
 
-        # 2. Laplacian edge sharpness (abrupt edges may indicate copy-paste)
         def laplacian_variance(channel):
             kernel = np.array([[0, 1, 0], [1, -4, 1], [0, 1, 0]], dtype=np.float32)
             from numpy.lib.stride_tricks import sliding_window_view
@@ -88,40 +102,23 @@ def process_image(image_bytes: bytes) -> float:
             return np.var(conv)
 
         lap_var = laplacian_variance(gray)
-        sharpness = min(lap_var / 5000.0, 1.0)  # normalise
-
-        # 3. Colour channel imbalance (spliced regions can have different colour profiles)
+        sharpness = min(lap_var / 5000.0, 1.0)
         channel_stds = [np.std(img_array[:, :, c]) / 255.0 for c in range(3)]
-        imbalance = np.std(channel_stds)  # low = balanced, high = suspicious
+        imbalance = np.std(channel_stds)
 
-        # Fuse into a single score
-        # Higher noise + high sharpness variance + colour imbalance → higher tamper score
         raw = 0.4 * (1.0 - noise) + 0.4 * sharpness + 0.2 * (imbalance * 10)
         score = max(0.0, min(1.0, raw))
         return round(score, 4)
     except Exception:
-        return 0.5  # neutral fallback for unreadable images
+        return 0.5
 
 def extract_text_from_image(image_bytes: bytes) -> str:
     try:
         image = Image.open(io.BytesIO(image_bytes))
         text = pytesseract.image_to_string(image)
         return text
-    except Exception as e:
+    except Exception:
         return ""
-
-def find_id_in_text(text: str, doc_type: str) -> str:
-    if doc_type == "aadhaar":
-        # Look for 12 consecutive digits or spaced digits
-        matches = re.findall(r'\b\d{4}\s?\d{4}\s?\d{4}\b', text)
-        if matches:
-            return matches[0].replace(" ", "")
-    elif doc_type == "pan":
-        matches = re.findall(r'\b[A-Z]{5}[0-9]{4}[A-Z]{1}\b', text)
-        if matches:
-            return matches[0]
-    # MRZ is harder to regex generically from messy OCR, usually handled by specific OCR setups
-    return ""
 
 @app.get("/")
 async def root():
@@ -141,7 +138,6 @@ async def verify_document(
         image_bytes = await file.read()
         reasons = []
         
-        # 1. OCR (if ID is not provided)
         if not document_id:
             text = extract_text_from_image(image_bytes)
             document_id = find_id_in_text(text, document_type.lower())
@@ -150,7 +146,6 @@ async def verify_document(
             else:
                 reasons.append("OCR failed to extract ID. Using generic validation.")
 
-        # 2. Validation Rules
         validation_passed = False
         doc_type_lower = document_type.lower()
         
@@ -175,12 +170,9 @@ async def verify_document(
         else:
             reasons.append("Unknown document type")
 
-        # 3. AI Inference
         tamper_score = process_image(image_bytes)
         reasons.append(f"Visual Tamper Score calculated: {tamper_score:.4f}")
 
-        # 4. Fusion Logic
-        # Thresholds: 0.519 +/- 0.15
         decision = "REVIEW"
         if tamper_score < 0.369 and validation_passed:
             decision = "ACCEPT"
